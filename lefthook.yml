@@ -1,0 +1,25 @@
+# lefthook.yml
+
+# Pre-commit hooks: Run linters on staged files
+pre-commit:
+  parallel: true
+  jobs:
+    - name: ruff-check
+      run: uv run ruff check {staged_files} --fix
+      glob: "*.py"
+      stage_fixed: true
+
+    - name: ruff-format
+      run: uv run ruff format {staged_files}
+      glob: "*.py"
+      stage_fixed: true
+
+    - name: codespell
+      run: uv run codespell {staged_files}
+      glob: "*.py"
+
+# Pre-push hooks: Run tests before pushing
+pre-push:
+  jobs:
+    - name: pytest
+      run: uv run pytest tests/
