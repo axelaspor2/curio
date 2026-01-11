@@ -49,8 +49,8 @@ model UserSource {
   isSubscribed Boolean  @default(true) @map("is_subscribed")
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(6)
 
-  user   User   @relation(fields: [userId], references: [id])
-  source Source @relation(fields: [sourceId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  source Source @relation(fields: [sourceId], references: [id], onDelete: Cascade)
 
   @@id([userId, sourceId])
   @@map("user_sources")
@@ -71,7 +71,7 @@ model Article {
   fetchedAt   DateTime  @default(now()) @map("fetched_at") @db.Timestamp(6)
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
 
-  source       Source        @relation(fields: [sourceId], references: [id])
+  source       Source        @relation(fields: [sourceId], references: [id], onDelete: Cascade)
   interactions Interaction[]
 
   @@unique([sourceId, externalId])
@@ -95,8 +95,8 @@ model Interaction {
   readingTimeSec Int?            @map("reading_time_sec")
   createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamp(6)
 
-  user    User    @relation(fields: [userId], references: [id])
-  article Article @relation(fields: [articleId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([articleId])
@@ -111,7 +111,7 @@ model UserInterestVector {
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_interest_vectors")
 }
