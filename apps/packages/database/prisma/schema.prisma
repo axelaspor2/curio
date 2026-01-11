@@ -78,13 +78,22 @@ model Article {
   @@map("articles")
 }
 
+// Enum for interaction types (improves code readability)
+// 0:SKIP, 1:LIKE, 2:OPEN, 3:READ
+enum InteractionType {
+  SKIP
+  LIKE
+  OPEN
+  READ
+}
+
 model Interaction {
-  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId         String   @map("user_id") @db.Uuid
-  articleId      String   @map("article_id") @db.Uuid
-  type           Int      @db.SmallInt // 0:skip, 1:like, 2:open, 3:read
-  readingTimeSec Int?     @map("reading_time_sec")
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String          @map("user_id") @db.Uuid
+  articleId      String          @map("article_id") @db.Uuid
+  type           InteractionType
+  readingTimeSec Int?            @map("reading_time_sec")
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamp(6)
 
   user    User    @relation(fields: [userId], references: [id])
   article Article @relation(fields: [articleId], references: [id])
