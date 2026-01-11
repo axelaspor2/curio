@@ -8,10 +8,10 @@ Curio プロジェクトの標準ディレクトリ構成。
 .
 ├── apps/                    # [Apps] 実行可能なアプリケーション
 │   ├── api/                 # Backend API (Hono)
-│   └── web/                 # Frontend (TanStack Start)
+│   └── web/                 # Frontend (React(Vite) )
 │
 ├── packages/                # [Packages] 共有資産
-│   ├── database/            # DB Schema (Drizzle)
+│   ├── database/            # DB Schema (Prisma)
 │   └── shared/              # 共有型定義・定数
 │
 ├── infra/                   # [Infra] Terraform 管理
@@ -23,5 +23,5 @@ Curio プロジェクトの標準ディレクトリ構成。
 
 - **apps/api**: API サーバーおよびビジネスロジック。
 - **apps/web**: フロントエンドアプリケーション。
-- **packages/database**: データベーススキーマ定義 (Drizzle ORM) の単一リソース。
+- **packages/database**: データベーススキーマ定義 (Prisma) の単一リソース。
 - **packages/shared**: API/Web 間で共有する TypeScript 型定義。
