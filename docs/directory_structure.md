@@ -6,16 +6,17 @@ Curio プロジェクトの標準ディレクトリ構成。
 
 ```
 .
-├── apps/                    # [Apps] 実行可能なアプリケーション
-│   ├── api/                 # Backend API (Hono)
-│   └── web/                 # Frontend (React(Vite) )
+├── apps/                          # [pnpm Monorepo Root]
+│   ├── api/                       # Backend API (Hono)
+│   ├── web/                       # Frontend (React/Vite)
+│   ├── packages/
+│   │   ├── database/              # DB Schema (Prisma)
+│   │   └── shared/                # 共有型定義・定数
+│   ├── pnpm-workspace.yaml        # ワークスペース定義
+│   └── package.json               # ルート設定
 │
-├── packages/                # [Packages] 共有資産
-│   ├── database/            # DB Schema (Prisma)
-│   └── shared/              # 共有型定義・定数
-│
-├── infra/                   # [Infra] Terraform 管理
-├── docs/                    # [Docs] 設計ドキュメント
+├── infra/                         # [External] Terraform (pnpm 管理外)
+├── docs/                          # [Docs] 設計ドキュメント
 └── README.md
 ```
 
@@ -23,5 +24,6 @@ Curio プロジェクトの標準ディレクトリ構成。
 
 - **apps/api**: API サーバーおよびビジネスロジック。
 - **apps/web**: フロントエンドアプリケーション。
-- **packages/database**: データベーススキーマ定義 (Prisma) の単一リソース。
-- **packages/shared**: API/Web 間で共有する TypeScript 型定義。
+- **apps/packages/database**: データベーススキーマ定義 (Prisma) の単一リソース。
+- **apps/packages/shared**: API/Web 間で共有する TypeScript 型定義。
+- **infra/**: Terraform によるインフラ管理。pnpm 管理外。
