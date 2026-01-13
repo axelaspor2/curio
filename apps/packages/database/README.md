@@ -1,72 +1,64 @@
 # @curio/database
 
-Curio プロジェクトの共通データベースパッケージ。
-Prisma ORM + pgvector を使用してデータベース接続と型安全なクライアントを提供します。
+Curio のデータベースパッケージ。Prisma ORM + pgvector を使用。
 
 ## セットアップ
 
 ```bash
+# 1. Docker で PostgreSQL + pgvector を起動
+docker compose up -d
+
+# 2. 依存関係をインストール
 cd apps
 pnpm install
-pnpm db:generate
+
+# 3. マイグレーション実行
+pnpm db:migrate
+
+# 4. (オプション) シードデータ投入
+pnpm --filter @curio/database db:seed
 ```
 
 ## 利用可能なスクリプト
 
-| コマンド                 | 説明                   |
-| ------------------------ | ---------------------- |
-| `pnpm db:generate`       | Prisma Client を生成   |
-| `pnpm db:migrate:dev`    | 開発用マイグレーション |
-| `pnpm db:migrate:deploy` | 本番用マイグレーション |
-| `pnpm db:seed`           | シードデータ投入       |
-| `pnpm db:studio`         | Prisma Studio (GUI)    |
-| `pnpm db:reset`          | DB リセット            |
-| `pnpm build`             | TypeScript ビルド      |
+| スクリプト         | 説明                   |
+| ------------------ | ---------------------- |
+| `pnpm db:generate` | Prisma Client を生成   |
+| `pnpm db:migrate`  | マイグレーションを適用 |
+| `pnpm db:studio`   | Prisma Studio を起動   |
+| `pnpm db:seed`     | シードデータを投入     |
 
-## ベクトル検索 (pgvector)
+## データモデル
 
-Cloud SQL PostgreSQL + pgvector を使用。
+- **User** - ユーザー
+- **Source** - RSS などのコンテンツソース
+- **Article** - 記事 (ベクトル embedding 付き)
+- **Interaction** - ユーザー行動 (SKIP/LIKE/OPEN/READ)
+- **UserSource** - 購読関係
+- **UserInterestVector** - ユーザー興味ベクトル
 
-- **拡張有効化**: `migrations/00000000000000_enable_pgvector`
-- **HNSW インデックス**: `migrations/00000000000001_add_hnsw_indexes`
-- **ベクトル型**: `Unsupported("vector(768)")`
+## ベクトル検索
 
-### 類似度検索 (Raw SQL)
+pgvector 拡張と HNSW インデックスを使用。
 
 ```typescript
 import { prisma } from "@curio/database";
 
+// 類似記事検索 (Raw SQL)
 const similar = await prisma.$queryRaw`
-  SELECT id, title
+  SELECT id, title, 1 - (embedding <=> ${vector}::vector) AS similarity
   FROM articles
-  ORDER BY embedding <=> ${userVector}::vector
+  ORDER BY embedding <=> ${vector}::vector
   LIMIT 20
 `;
 ```
 
-## データモデル
+## 環境変数
 
-- `User` - ユーザー
-- `Source` - コンテンツソース (RSS 等)
-- `Article` - 記事 (embedding 付き)
-- `Interaction` - ユーザー行動 (SKIP/LIKE/OPEN/READ)
-- `UserInterestVector` - ユーザー興味ベクトル
-- `UserSource` - ユーザーのソース購読
+`.env` ファイルに設定:
 
-## アプリケーションからの利用
-
-```typescript
-import { prisma, InteractionType } from "@curio/database";
-
-// 記事取得
-const articles = await prisma.article.findMany();
-
-// インタラクション記録
-await prisma.interaction.create({
-  data: {
-    userId: user.id,
-    articleId: article.id,
-    type: InteractionType.LIKE,
-  },
-});
 ```
+DATABASE_URL="postgresql://curio:curio_dev_password@localhost:5433/curio?schema=public"
+```
+
+ポート 5433 を使用（ローカル PostgreSQL との競合を回避）。

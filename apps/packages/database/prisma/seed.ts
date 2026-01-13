@@ -1,42 +1,71 @@
+/**
+ * @curio/database - Seed Script
+ *
+ * Creates initial development data for local testing.
+ * Safe to run multiple times (uses upsert for idempotency).
+ */
+import 'dotenv/config';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/client/index.js';
 
-const prisma = new PrismaClient();
+// Initialize PrismaClient with pg adapter (Prisma 7 requirement)
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error('DATABASE_URL environment variable is required');
+}
 
-async function main() {
-  console.log('🌱 Seeding database...');
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
-  // Create test user
-  const user = await prisma.user.upsert({
-    where: { email: 'test@curio.dev' },
-    update: {},
-    create: {
-      email: 'test@curio.dev',
-      name: 'Test User',
-    },
-  });
-  console.log('✅ Created user:', user.email);
+const SEED_DATA = {
+  users: [
+    { email: 'test@curio.dev', name: 'Test User' },
+    { email: 'demo@curio.dev', name: 'Demo User' },
+  ],
+  sources: [
+    { type: 'rss', name: 'Hacker News', url: 'https://news.ycombinator.com/rss' },
+    { type: 'rss', name: 'TechCrunch', url: 'https://techcrunch.com/feed/' },
+  ],
+} as const;
 
-  // Create sample source
-  const source = await prisma.source.upsert({
-    where: { id: '00000000-0000-0000-0000-000000000001' },
-    update: {},
-    create: {
-      id: '00000000-0000-0000-0000-000000000001',
-      type: 'rss',
-      name: 'Hacker News',
-      url: 'https://news.ycombinator.com/rss',
-    },
-  });
-  console.log('✅ Created source:', source.name);
+async function main(): Promise<void> {
+  console.log('🌱 Seeding database...\n');
 
-  console.log('🎉 Seed completed!');
+  // Create users
+  for (const userData of SEED_DATA.users) {
+    const user = await prisma.user.upsert({
+      where: { email: userData.email },
+      update: { name: userData.name },
+      create: userData,
+    });
+    console.log(`✅ User: ${user.email}`);
+  }
+
+  // Create sources (using url as unique identifier via findFirst + create pattern)
+  for (const sourceData of SEED_DATA.sources) {
+    const existing = await prisma.source.findFirst({
+      where: { url: sourceData.url },
+    });
+
+    if (!existing) {
+      const source = await prisma.source.create({ data: sourceData });
+      console.log(`✅ Source: ${source.name} (created)`);
+    } else {
+      console.log(`⏭️  Source: ${existing.name} (exists)`);
+    }
+  }
+
+  console.log('\n🎉 Seed completed!');
 }
 
 main()
-  .catch((e) => {
-    console.error('❌ Seed failed:', e);
+  .catch((error: unknown) => {
+    console.error('❌ Seed failed:', error);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
+    await pool.end();
   });

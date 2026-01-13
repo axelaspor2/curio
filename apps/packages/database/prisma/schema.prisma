@@ -36,7 +36,7 @@ model Source {
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
 
-  user        User?        @relation(fields: [userId], references: [id])
+  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
   articles    Article[]
   subscribers UserSource[]
 
