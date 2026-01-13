@@ -21,7 +21,8 @@
     "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "tsx prisma/test.ts"
+    "test": "tsx prisma/test.ts",
+    "postbuild": "cp -r src/generated dist/generated"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
@@ -36,11 +37,8 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=24.0.0"
   },
   "files": [
     "dist",
