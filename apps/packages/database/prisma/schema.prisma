@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  // URL is configured in prisma.config.ts (Prisma 7+ requirement)
+}
+
+// NOTE: pgvector extension is enabled via custom migration (prisma/migrations/xxx_enable_pgvector)
+// Run: prisma migrate dev --create-only, then add: CREATE EXTENSION IF NOT EXISTS vector;
+
+model User {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email     String   @unique @db.VarChar(255)
+  name      String?  @db.VarChar(255)
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  sources        Source[]
+  userSources    UserSource[]
+  interactions   Interaction[]
+  interestVector UserInterestVector?
+
+  @@map("users")
+}
+
+model Source {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  type      String   @db.VarChar(50) // 'rss', 'twitter' etc
+  name      String   @db.VarChar(255)
+  url       String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  articles    Article[]
+  subscribers UserSource[]
+
+  @@map("sources")
+}
+
+model UserSource {
+  userId       String   @map("user_id") @db.Uuid
+  sourceId     String   @map("source_id") @db.Uuid
+  isSubscribed Boolean  @default(true) @map("is_subscribed")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  source Source @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@id([userId, sourceId])
+  @@map("user_sources")
+}
+
+model Article {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceId    String   @map("source_id") @db.Uuid
+  externalId  String?  @map("external_id") @db.VarChar(255)
+  title       String
+  content     String?
+  summary     String?
+  url         String
+  imageUrl    String?  @map("image_url")
+  categories  Json?
+  embedding   Unsupported("vector(768)")? // Native pgvector support via unsupported type
+  publishedAt DateTime? @map("published_at") @db.Timestamp(6)
+  fetchedAt   DateTime  @default(now()) @map("fetched_at") @db.Timestamp(6)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+
+  source       Source        @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  interactions Interaction[]
+
+  @@unique([sourceId, externalId])
+  @@map("articles")
+}
+
+// Enum for interaction types (improves code readability)
+// 0:SKIP, 1:LIKE, 2:OPEN, 3:READ
+enum InteractionType {
+  SKIP
+  LIKE
+  OPEN
+  READ
+}
+
+model Interaction {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String          @map("user_id") @db.Uuid
+  articleId      String          @map("article_id") @db.Uuid
+  type           InteractionType
+  readingTimeSec Int?            @map("reading_time_sec")
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamp(6)
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([articleId])
+  @@map("interactions")
+}
+
+model UserInterestVector {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String    @unique @map("user_id") @db.Uuid
+  interestEmbedding Unsupported("vector(768)")? @map("interest_embedding")
+  lastCalculatedAt  DateTime? @map("last_calculated_at") @db.Timestamp(6)
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_interest_vectors")
+}

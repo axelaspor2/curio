@@ -1,4 +1,4 @@
-# **Curio \- プロダクト仕様書**
+# **Curio - プロダクト仕様書**
 
 ## **概要**
 
@@ -55,106 +55,158 @@
 
 ---
 
-## **システム構成**
+## **技術スタック (2026 年 1 月)**
 
-## ![][image1]
+| レイヤー        | 技術                                                          | 備考                             |
+| --------------- | ------------------------------------------------------------- | -------------------------------- |
+| Frontend        | React + Vite                                                  | `apps/web/`                      |
+| Backend         | [Hono](https://hono.dev/) + Cloud Run                         | `apps/api/`                      |
+| Database        | Cloud SQL (PostgreSQL 17)                                     | `apps/packages/database/`        |
+| ORM             | [Prisma 7](https://www.prisma.io/) + Driver Adapter           | @prisma/adapter-pg               |
+| Vector Search   | [pgvector](https://github.com/pgvector/pgvector) 0.8.1 + HNSW | Cosine Similarity                |
+| Embeddings      | **gemini-embedding-001**                                      | 旧 text-embedding-gecko は非推奨 |
+| LLM             | **Gemini 3 Flash**                                            | Gemini 2.5 Flash は 2026/6 終了  |
+| Authentication  | Better Auth                                                   |                                  |
+| Batch           | Cloud Scheduler + Cloud Run Jobs                              |                                  |
+| IaC             | Terraform                                                     | `infra/`                         |
+| Package Manager | pnpm 10.28.0                                                  | Workspaces                       |
 
-## **技術スタック**
-
-| レイヤー       | 技術                                           |
-| -------------- | ---------------------------------------------- |
-| Frontend       | TanStack Start \+ React                        |
-| Backend        | Cloud Run \+ Hono                              |
-| Database       | Cloud SQL (PostgreSQL)                         |
-| Authentication | Better Auth                                    |
-| Vector Search  | Cloud SQL (pgvector)                           |
-| Embeddings     | Vertex AI Embeddings API (textembedding-gecko) |
-| LLM            | Vertex AI Gemini (3 / 2.5 Flash 等を検証)      |
-| Batch          | Cloud Scheduler \+ Cloud Run Jobs              |
-| Hosting        | Google Cloud Platform                          |
+> **重要 (2026 年 1 月時点)**
+>
+> - `text-embedding-004` は 2026/1/14 に廃止
+> - `gemini-embedding-001` が最新の推奨モデル
+> - Gemini 3 Flash が 2025/12/17 リリース、デフォルトに
 
 ---
 
-## **データモデル**
+## **データモデル (Prisma スキーマ)**
 
 ### **users**
 
-CREATE TABLE users (  
- id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  
- email VARCHAR(255) UNIQUE NOT NULL,  
- name VARCHAR(255),  
- avatar_url TEXT,  
- created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
- updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  
-);
+```prisma
+model User {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email     String   @unique @db.VarChar(255)
+  name      String?  @db.VarChar(255)
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
-### **sources (コンテンツソース)**
+  sources        Source[]
+  userSources    UserSource[]
+  interactions   Interaction[]
+  interestVector UserInterestVector?
 
-CREATE TABLE sources (  
- id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  
- user_id UUID REFERENCES users(id) NULL, \-- NULL \= 運営提供  
- type VARCHAR(50) NOT NULL, \-- 'rss', 'twitter', 'podcast', etc.  
- name VARCHAR(255) NOT NULL,  
- url TEXT NOT NULL,  
- is_active BOOLEAN DEFAULT true,  
- created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  
-);
+  @@map("users")
+}
+```
+
+### **sources**
+
+```prisma
+model Source {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid  // NULL = 運営提供
+  type      String   @db.VarChar(50)  // 'rss', 'twitter', etc.
+  name      String   @db.VarChar(255)
+  url       String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  articles    Article[]
+  subscribers UserSource[]
+
+  @@map("sources")
+}
+```
 
 ### **articles**
 
-CREATE TABLE articles (  
- id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  
- source_id UUID REFERENCES sources(id) NOT NULL,  
- external_id VARCHAR(255), \-- 元記事の ID/URL  
- title TEXT NOT NULL,  
- content TEXT,  
- summary TEXT, \-- LLM 生成の要約  
- url TEXT NOT NULL,  
- image_url TEXT,  
- categories JSONB, \-- LLM 生成のカテゴリ  
- embedding vector(768), -- pgvector (Vertex AI 統合)  
- published_at TIMESTAMP,  
- fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
- created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+```prisma
+model Article {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceId    String   @map("source_id") @db.Uuid
+  externalId  String?  @map("external_id") @db.VarChar(255)
+  title       String
+  content     String?
+  summary     String?      // LLM 生成の要約
+  url         String
+  imageUrl    String?  @map("image_url")
+  categories  Json?        // LLM 生成のカテゴリ
+  embedding   Unsupported("vector(768)")?  // pgvector
+  publishedAt DateTime? @map("published_at")
+  fetchedAt   DateTime  @default(now()) @map("fetched_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
 
-UNIQUE(source_id, external_id)  
-);
+  source       Source        @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  interactions Interaction[]
 
-### **interactions (ユーザー行動)**
+  @@unique([sourceId, externalId])
+  @@map("articles")
+}
+```
 
-CREATE TABLE interactions (  
- id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  
- user_id UUID REFERENCES users(id) NOT NULL,  
- article_id UUID REFERENCES articles(id) NOT NULL,  
- type SMALLINT NOT NULL, -- 0:skip, 1:like, 2:open, 3:read  
- reading_time_sec INTEGER, \-- type='read' の場合の滞在時間  
- created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+### **interactions**
 
-INDEX idx_interactions_user (user_id),  
- INDEX idx_interactions_article (article_id)  
-);
+```prisma
+enum InteractionType {
+  SKIP
+  LIKE
+  OPEN
+  READ
+}
 
-### **user_interest_vectors (ユーザー興味ベクトル)**
+model Interaction {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String          @map("user_id") @db.Uuid
+  articleId      String          @map("article_id") @db.Uuid
+  type           InteractionType
+  readingTimeSec Int?            @map("reading_time_sec")
+  createdAt      DateTime        @default(now()) @map("created_at")
 
-CREATE TABLE user_interest_vectors (  
- id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  
- user_id UUID REFERENCES users(id) UNIQUE NOT NULL,  
- interest_embedding vector(768), -- pgvector  
- last_calculated_at TIMESTAMP,  
- created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
- updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  
-);
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
-### **user_sources (ユーザーのソース購読)**
+  @@index([userId])
+  @@index([articleId])
+  @@map("interactions")
+}
+```
 
-CREATE TABLE user_sources (  
- user_id UUID REFERENCES users(id) NOT NULL,  
- source_id UUID REFERENCES sources(id) NOT NULL,  
- is_subscribed BOOLEAN DEFAULT true,  
- created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+### **user_interest_vectors**
 
-PRIMARY KEY (user_id, source_id)  
-);
+```prisma
+model UserInterestVector {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String    @unique @map("user_id") @db.Uuid
+  interestEmbedding Unsupported("vector(768)")? @map("interest_embedding")
+  lastCalculatedAt  DateTime? @map("last_calculated_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_interest_vectors")
+}
+```
+
+### **user_sources**
+
+```prisma
+model UserSource {
+  userId       String   @map("user_id") @db.Uuid
+  sourceId     String   @map("source_id") @db.Uuid
+  isSubscribed Boolean  @default(true) @map("is_subscribed")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  source Source @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@id([userId, sourceId])
+  @@map("user_sources")
+}
+```
 
 ---
 
@@ -163,72 +215,75 @@ PRIMARY KEY (user_id, source_id)
 ### **記事のベクトル化**
 
 1. バッチで新規記事を取得
-2. Gemini で記事を分類・要約
-3. Vertex AI Embeddings API でベクトル生成
-4. Cloud SQL (pgvector) に保存
+2. Gemini 3 Flash で記事を分類・要約
+3. **gemini-embedding-001** でベクトル生成
+4. Cloud SQL (pgvector) + HNSW インデックスに保存
 
 ### **ユーザー興味ベクトルの計算**
 
-1. `interactions` から `like` した記事を取得
+1. `interactions` から `LIKE` した記事を取得
 2. 各記事のベクトルを加重平均
    - 最近の like ほど重みを大きく
-   - `read` で滞在時間が長いものも重みを増やす
+   - `READ` で滞在時間が長いものも重みを増やす
 3. 計算結果を `user_interest_vectors` に保存
 
 ### **フィード生成**
 
-1. ユーザーの興味ベクトルで Cloud SQL (pgvector) を検索 (Cosine Similarity)
-2. 類似度の高い記事を取得
-3. すでに表示済み/スキップ済みを除外
-4. スコア順にタイムライン表示
+```typescript
+// pgvector + HNSW による高速類似検索
+const similar = await prisma.$queryRaw`
+  SELECT id, title, 
+         1 - (embedding <=> ${userVector}::vector) AS similarity
+  FROM articles
+  ORDER BY embedding <=> ${userVector}::vector
+  LIMIT 20
+`;
+```
 
 ---
 
 ## **MVP タスクリスト**
 
-### **Phase 1: 基盤構築**
+### **Phase 1: 基盤構築** ✅
 
-- \[ \] GCP プロジェクトセットアップ
-- \[ \] Cloud SQL (PostgreSQL) インスタンス作成
-- \[ \] Hono プロジェクト初期化
-- \[ \] TanStack Start プロジェクト初期化
-- \[ \] Better Auth 導入・認証フロー実装
-- \[ \] DB マイグレーション (Prisma or Drizzle)
+- [x] pnpm モノレポセットアップ
+- [x] Docker Compose (PostgreSQL + pgvector)
+- [x] Prisma 7 + Driver Adapter 設定
+- [x] DB スキーマ定義 (6 モデル)
+- [x] pgvector 拡張 + HNSW インデックス
+- [x] 統合テスト (7 tests passed)
 
 ### **Phase 2: コンテンツ取得**
 
-- \[ \] Sources テーブル・API 実装
-- \[ \] RSS フィード取得バッチ実装
-- \[ \] Cloud Run Jobs \+ Scheduler 設定
-- \[ \] 固定ソース 3 つを登録（ソース選定後）
+- [ ] Hono API 初期化 (`apps/api`)
+- [ ] Sources API 実装
+- [ ] RSS フィード取得バッチ
+- [ ] Cloud Run Jobs + Scheduler
 
 ### **Phase 3: LLM 処理**
 
-- \[ \] Vertex AI Gemini 接続
-- \[ \] 記事分類・要約パイプライン実装
-- \[ \] Vertex AI Embeddings でベクトル生成
-- \[ \] Vertex AI Vector Search インデックス作成
+- [ ] Vertex AI Gemini 3 Flash 接続
+- [ ] 記事分類・要約パイプライン
+- [ ] gemini-embedding-001 でベクトル生成
 
 ### **Phase 4: フロントエンド**
 
-- \[ \] スワイプ UI コンポーネント実装
-- \[ \] タイムライン表示
-- \[ \] 記事詳細モーダル
-- \[ \] インタラクション記録 API 連携
+- [ ] React + Vite 初期化 (`apps/web`)
+- [ ] スワイプ UI コンポーネント
+- [ ] タイムライン表示
+- [ ] 記事詳細モーダル
 
 ### **Phase 5: パーソナライズ**
 
-- \[ \] インタラクション保存 API
-- \[ \] ユーザー興味ベクトル計算バッチ
-- \[ \] パーソナライズドフィード API
-- \[ \] 初期ユーザー向けコールドスタート対応
+- [ ] インタラクション保存 API
+- [ ] ユーザー興味ベクトル計算バッチ
+- [ ] パーソナライズドフィード API
 
-### **Phase 6: 仕上げ**
+### **Phase 6: 認証・仕上げ**
 
-- \[ \] レスポンシブ対応（モバイル最適化）
-- \[ \] エラーハンドリング
-- \[ \] ローディング・スケルトン UI
-- \[ \] デプロイ・動作確認
+- [ ] Better Auth 導入
+- [ ] レスポンシブ対応
+- [ ] Cloud Run デプロイ
 
 ---
 
@@ -238,14 +293,5 @@ PRIMARY KEY (user_id, source_id)
 - X (Twitter) 連携
 - Podcast 音声の文字起こし・要約
 - プッシュ通知
-- ブックマーク機能
-- シェア機能
-- カテゴリフィルター
+- ブックマーク・シェア機能
 - ダークモード
-
----
-
-## **未決定事項**
-
-- \[ \] MVP の固定ソース 3 つの選定
-- \[ \] Gemini モデルの最終選定（コスト・精度のバランス検証後）
