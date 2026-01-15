@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./dist/index.d.ts"
+  },
   "scripts": {
     "dev": "dotenvx run -- tsx watch src/index.ts",
     "build": "tsc",
