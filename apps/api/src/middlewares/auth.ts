@@ -30,8 +30,6 @@ export const authMiddleware = async (c: Context, next: Next) => {
     if (!session) {
         return c.json({ error: "Unauthorized" }, 401);
     }
-    c.set("session", session);
-    c.set("user", session.user);
 
     return next();
 };
