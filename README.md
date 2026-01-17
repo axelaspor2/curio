@@ -16,6 +16,30 @@ AI-powered Personalized Curation Platform.
 
 ## Quick Start
 
+### Option 1: Nix (推奨)
+
+[Nix](https://nixos.org/) を使うと、必要なツールが自動でセットアップされます。
+
+```bash
+# 1. Nix をインストール（未インストールの場合）
+curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
+
+# 2. direnv を許可
+direnv allow
+
+# 3. Start PostgreSQL with pgvector
+docker compose up -d
+
+# 4. Install dependencies & run migrations
+cd apps
+pnpm install
+pnpm db:migrate
+```
+
+詳細は [docs/nix-introduction.md](docs/nix-introduction.md) を参照。
+
+### Option 2: Manual Setup
+
 ```bash
 # 1. Start PostgreSQL with pgvector
 docker compose up -d
