@@ -9,10 +9,10 @@
  *
  * Run with: tsx prisma/test.ts
  */
-import 'dotenv/config';
-import { Pool } from 'pg';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, InteractionType } from '../src/generated/client/index.js';
+import "dotenv/config";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+import { InteractionType, PrismaClient } from "../src/generated/client/index.js";
 
 // ============================================================================
 // Setup
@@ -20,7 +20,7 @@ import { PrismaClient, InteractionType } from '../src/generated/client/index.js'
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
-  console.error('❌ DATABASE_URL environment variable is required');
+  console.error("❌ DATABASE_URL environment variable is required");
   process.exit(1);
 }
 
@@ -47,7 +47,7 @@ function fail(testName: string, error: unknown): void {
 // ============================================================================
 
 async function testConnection(): Promise<void> {
-  const testName = 'Connection: Can connect to database';
+  const testName = "Connection: Can connect to database";
   try {
     await prisma.$queryRaw`SELECT 1`;
     pass(testName);
@@ -57,7 +57,7 @@ async function testConnection(): Promise<void> {
 }
 
 async function testPgvectorExtension(): Promise<void> {
-  const testName = 'pgvector: Extension is enabled';
+  const testName = "pgvector: Extension is enabled";
   try {
     const result = await prisma.$queryRaw<{ extname: string }[]>`
       SELECT extname FROM pg_extension WHERE extname = 'vector'
@@ -65,7 +65,7 @@ async function testPgvectorExtension(): Promise<void> {
     if (result.length > 0) {
       pass(testName);
     } else {
-      fail(testName, 'pgvector extension not found');
+      fail(testName, "pgvector extension not found");
     }
   } catch (e) {
     fail(testName, e);
@@ -73,7 +73,7 @@ async function testPgvectorExtension(): Promise<void> {
 }
 
 async function testHnswIndexes(): Promise<void> {
-  const testName = 'pgvector: HNSW indexes exist';
+  const testName = "pgvector: HNSW indexes exist";
   try {
     const result = await prisma.$queryRaw<{ indexname: string }[]>`
       SELECT indexname FROM pg_indexes
@@ -90,30 +90,30 @@ async function testHnswIndexes(): Promise<void> {
 }
 
 async function testUserCRUD(): Promise<void> {
-  const testName = 'User: CRUD operations work';
+  const testName = "User: CRUD operations work";
   const testEmail = `test-${Date.now()}@test.com`;
   try {
     // Create
     const created = await prisma.user.create({
-      data: { email: testEmail, name: 'Test User' },
+      data: { email: testEmail, name: "Test User" },
     });
-    if (!created.id) throw new Error('Create failed');
+    if (!created.id) throw new Error("Create failed");
 
     // Read
     const found = await prisma.user.findUnique({ where: { email: testEmail } });
-    if (!found) throw new Error('Read failed');
+    if (!found) throw new Error("Read failed");
 
     // Update
     const updated = await prisma.user.update({
       where: { email: testEmail },
-      data: { name: 'Updated User' },
+      data: { name: "Updated User" },
     });
-    if (updated.name !== 'Updated User') throw new Error('Update failed');
+    if (updated.name !== "Updated User") throw new Error("Update failed");
 
     // Delete
     await prisma.user.delete({ where: { email: testEmail } });
     const deleted = await prisma.user.findUnique({ where: { email: testEmail } });
-    if (deleted) throw new Error('Delete failed');
+    if (deleted) throw new Error("Delete failed");
 
     pass(testName);
   } catch (e) {
@@ -124,20 +124,20 @@ async function testUserCRUD(): Promise<void> {
 }
 
 async function testSourceArticleRelation(): Promise<void> {
-  const testName = 'Relations: Source → Article cascade';
+  const testName = "Relations: Source → Article cascade";
   const testEmail = `relation-test-${Date.now()}@test.com`;
   try {
     // Create user
     const user = await prisma.user.create({
-      data: { email: testEmail, name: 'Relation Test' },
+      data: { email: testEmail, name: "Relation Test" },
     });
 
     // Create source
     const source = await prisma.source.create({
       data: {
-        type: 'rss',
-        name: 'Test Source',
-        url: 'https://test.com/rss',
+        type: "rss",
+        name: "Test Source",
+        url: "https://test.com/rss",
         userId: user.id,
       },
     });
@@ -146,8 +146,8 @@ async function testSourceArticleRelation(): Promise<void> {
     const article = await prisma.article.create({
       data: {
         sourceId: source.id,
-        title: 'Test Article',
-        url: 'https://test.com/article',
+        title: "Test Article",
+        url: "https://test.com/article",
       },
     });
 
@@ -156,7 +156,7 @@ async function testSourceArticleRelation(): Promise<void> {
 
     // Verify article is deleted
     const foundArticle = await prisma.article.findUnique({ where: { id: article.id } });
-    if (foundArticle) throw new Error('Cascade delete failed');
+    if (foundArticle) throw new Error("Cascade delete failed");
 
     // Cleanup
     await prisma.user.delete({ where: { id: user.id } });
@@ -169,10 +169,15 @@ async function testSourceArticleRelation(): Promise<void> {
 }
 
 async function testInteractionEnum(): Promise<void> {
-  const testName = 'Enum: InteractionType values accessible';
+  const testName = "Enum: InteractionType values accessible";
   try {
-    const values = [InteractionType.SKIP, InteractionType.LIKE, InteractionType.OPEN, InteractionType.READ];
-    if (values.length !== 4) throw new Error('Enum values missing');
+    const values = [
+      InteractionType.SKIP,
+      InteractionType.LIKE,
+      InteractionType.OPEN,
+      InteractionType.READ,
+    ];
+    if (values.length !== 4) throw new Error("Enum values missing");
     pass(testName);
   } catch (e) {
     fail(testName, e);
@@ -180,7 +185,7 @@ async function testInteractionEnum(): Promise<void> {
 }
 
 async function testAllTables(): Promise<void> {
-  const testName = 'Schema: All 6 tables exist';
+  const testName = "Schema: All 6 tables exist";
   try {
     const result = await prisma.$queryRaw<{ count: bigint }[]>`
       SELECT COUNT(*) as count FROM information_schema.tables
@@ -203,8 +208,8 @@ async function testAllTables(): Promise<void> {
 // ============================================================================
 
 async function main(): Promise<void> {
-  console.log('\n🧪 Running Database Integration Tests\n');
-  console.log('=' .repeat(50));
+  console.log("\n🧪 Running Database Integration Tests\n");
+  console.log("=".repeat(50));
 
   await testConnection();
   await testPgvectorExtension();
@@ -214,7 +219,7 @@ async function main(): Promise<void> {
   await testUserCRUD();
   await testSourceArticleRelation();
 
-  console.log('=' .repeat(50));
+  console.log("=".repeat(50));
   console.log(`\n📊 Results: ${passCount} passed, ${failCount} failed\n`);
 
   if (failCount > 0) {
@@ -224,7 +229,7 @@ async function main(): Promise<void> {
 
 main()
   .catch((e) => {
-    console.error('❌ Test runner failed:', e);
+    console.error("❌ Test runner failed:", e);
     process.exit(1);
   })
   .finally(async () => {

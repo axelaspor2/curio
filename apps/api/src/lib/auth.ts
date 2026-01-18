@@ -13,13 +13,13 @@ export const auth = betterAuth({
     enabled: true,
   },
   /**
-     * Better AuthはデフォルトでcamelCaseフィールド名を使用するが、
-     * 当プロジェクトのPostgreSQLデータベースはsnake_caseカラム名を使用している
-     * fields設定がないと、Better Authは'image'フィールドにデータを保存しようとするが、
-     * 実際のデータベースカラムは'avatar_url'のためデータ不整合が発生する
-     * このマッピングにより、TypeScript側の自然な命名を維持しつつ、
-     * データベース側の規約に合わせて正しくデータが保存・取得される
-  */
+   * Better AuthはデフォルトでcamelCaseフィールド名を使用するが、
+   * 当プロジェクトのPostgreSQLデータベースはsnake_caseカラム名を使用している
+   * fields設定がないと、Better Authは'image'フィールドにデータを保存しようとするが、
+   * 実際のデータベースカラムは'avatar_url'のためデータ不整合が発生する
+   * このマッピングにより、TypeScript側の自然な命名を維持しつつ、
+   * データベース側の規約に合わせて正しくデータが保存・取得される
+   */
   user: {
     modelName: "users",
     fields: {
