@@ -1,15 +1,22 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "./lib/logger.js";
+import { authMiddleware } from "./middlewares/auth.js";
 import { sessionMiddleware } from "./middlewares/session.js";
 import { authRouter } from "./routes/auth.js";
 import { healthRouter } from "./routes/health.js";
 
+const corsOrigins = process.env.CORS_ORIGINS?.split(",") ?? [
+  "http://localhost:3000",
+  "http://localhost:5173",
+];
+
 const app = new Hono()
   .use(sessionMiddleware)
+  .use(authMiddleware)
   .use(
     cors({
-      origin: ["http://localhost:3000", "http://localhost:5173"],
+      origin: corsOrigins,
       allowHeaders: ["Content-Type", "Authorization"],
       allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       exposeHeaders: ["Content-Length"],
