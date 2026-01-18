@@ -1,14 +1,22 @@
 import type { Context, Next } from "hono";
-import { auth } from "../lib/auth.js";
 
 const DEFINED_ROUTES = ["/api/auth"] as const;
-const PUBLIC_ROUTES = ["/health"] as const;
+const PUBLIC_ROUTES = ["/api/health"] as const;
 
+/**
+ * 認証ミドルウェア
+ *
+ * sessionMiddleware で設定されたセッション情報を使用して、
+ * 保護されたルートへのアクセスを制御します。
+ *
+ * - DEFINED_ROUTES に含まれないパス → 認証スキップ（404 処理へ）
+ * - PUBLIC_ROUTES に含まれるパス → 認証スキップ（公開エンドポイント）
+ * - それ以外 → セッション検証を実行し、無効な場合は 401 を返す
+ */
 export const authMiddleware = async (c: Context, next: Next) => {
   const path = c.req.path;
   const isDefinedRoute = DEFINED_ROUTES.some((route) => path.startsWith(route));
 
-  // 定義されていないルートの場合は認証をスキップして 404 処理に任せる
   if (!isDefinedRoute) {
     return next();
   }
@@ -19,9 +27,8 @@ export const authMiddleware = async (c: Context, next: Next) => {
     return next();
   }
 
-  const session = await auth.api.getSession({
-    headers: c.req.raw.headers,
-  });
+  // sessionMiddleware で設定されたセッションを取得
+  const session = c.get("session");
 
   if (!session) {
     return c.json({ error: "Unauthorized" }, 401);
