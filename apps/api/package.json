@@ -13,10 +13,7 @@
     "start": "dotenvx run -- node dist/index.js",
     "start:prod": "dotenvx run -- node dist/index.js",
     "clean": "rm -rf dist",
-    "typecheck": "tsc --noEmit",
-    "lint": "../node_modules/.bin/biome check src",
-    "lint:fix": "../node_modules/.bin/biome check --write src",
-    "format": "../node_modules/.bin/biome format --write src"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@curio/database": "workspace:*",
