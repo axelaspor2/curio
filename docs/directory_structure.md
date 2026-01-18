@@ -18,10 +18,10 @@ Curio プロジェクトの標準ディレクトリ構成 (2026 年 1 月時点)
 │   ├── package.json               # ルート設定 (packageManager指定)
 │   └── pnpm-lock.yaml             # ロックファイル
 │
-├── docker-compose.yml             # ローカル PostgreSQL + pgvector
-├── infra/                         # Terraform (pnpm 管理外) ※未実装
+├── compose.yaml                   # ローカル PostgreSQL + pgvector
+├── infra/                         # Terraform (pnpm 管理外)
+│   └── env/shared/cloudbuild.yaml # Cloud Build 設定
 ├── docs/                          # 設計ドキュメント
-├── plan/                          # 作業計画・PR
 └── README.md
 ```
 
@@ -32,24 +32,22 @@ apps/packages/database/
 ├── package.json               # @curio/database (v0.0.1)
 ├── tsconfig.json              # TypeScript 設定
 ├── prisma.config.ts           # Prisma 7 設定 (DATABASE_URL)
+├── README.md                  # 使用方法
 │
 ├── prisma/
 │   ├── schema.prisma          # スキーマ定義 (6モデル)
 │   ├── seed.ts                # シードデータスクリプト
+│   ├── test.ts                # 統合テスト (8テスト)
 │   └── migrations/
-│       ├── 20260113133855_init/   # 初期マイグレーション
-│       │   └── migration.sql      # pgvector + HNSW
+│       ├── 0_init/            # 初期マイグレーション
+│       │   └── migration.sql  # pgvector + HNSW
 │       └── migration_lock.toml
 │
 ├── src/
 │   ├── index.ts               # エントリポイント (Singleton)
 │   └── generated/client/      # Prisma 自動生成 (.gitignore対象)
 │
-├── dist/                      # ビルド成果物 (.gitignore対象)
-├── .env                       # 環境変数 (.gitignore対象)
-├── .env.example               # サンプル環境変数
-├── .gitignore                 # 除外設定
-└── README.md                  # 使用方法
+└── dist/                      # ビルド成果物 (.gitignore対象)
 ```
 
 ## 3. 各ディレクトリの役割
@@ -60,16 +58,15 @@ apps/packages/database/
 | `apps/web`               | React/Vite フロントエンド                       |
 | `apps/packages/database` | Prisma スキーマ・クライアント・マイグレーション |
 | `apps/packages/shared`   | 共有 TypeScript 型定義                          |
-| `infra/terraform`        | Cloud Run, Cloud SQL などの IaC                 |
+| `infra/`                 | Cloud Build, Terraform などの IaC               |
 | `docs/`                  | 設計仕様書・アーキテクチャ図                    |
-| `plan/`                  | PR 説明・作業計画                               |
 
 ## 4. 技術スタック (2026)
 
 | 技術       | バージョン                 |
 | ---------- | -------------------------- |
-| Node.js    | ≥22.0.0                    |
-| pnpm       | 10.28.0                    |
+| Node.js    | ≥24.0.0                    |
+| pnpm       | 10.x                       |
 | TypeScript | 5.9.3                      |
 | Prisma     | 7.2.0 + @prisma/adapter-pg |
-| PostgreSQL | 17 (pgvector 0.8.1)        |
+| PostgreSQL | 17 (pgvector)              |

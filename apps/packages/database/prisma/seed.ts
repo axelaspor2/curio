@@ -5,7 +5,6 @@
  * Safe to run multiple times (uses upsert for idempotency).
  */
 import 'dotenv/config';
-import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/client/index.js';
 
@@ -15,8 +14,8 @@ if (!connectionString) {
   throw new Error('DATABASE_URL environment variable is required');
 }
 
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
+// Prisma 7: PrismaPg manages connection pooling internally
+const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
 const SEED_DATA = {
@@ -67,5 +66,5 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-    await pool.end();
   });
+

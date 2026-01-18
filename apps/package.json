@@ -8,9 +8,10 @@
     "db:studio": "pnpm --filter @curio/database db:studio"
   },
   "devDependencies": {
-    "typescript": "^5.9.3",
     "@types/node": "^22.0.0",
-    "tsx": "^4.21.0"
+    "shx": "^0.4.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=22.0.0",

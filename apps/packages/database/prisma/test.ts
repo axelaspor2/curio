@@ -10,7 +10,6 @@
  * Run with: tsx prisma/test.ts
  */
 import 'dotenv/config';
-import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, InteractionType } from '../src/generated/client/index.js';
 
@@ -24,8 +23,8 @@ if (!connectionString) {
   process.exit(1);
 }
 
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
+// Prisma 7: PrismaPg can accept connectionString directly (no manual Pool required)
+const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
 let passCount = 0;
@@ -198,6 +197,25 @@ async function testAllTables(): Promise<void> {
   }
 }
 
+// Edge Case: Verify composite index exists for efficient "recent likes" query
+async function testCompositeIndex(): Promise<void> {
+  const testName = 'Index: Composite index (userId, type, createdAt) exists';
+  try {
+    const result = await prisma.$queryRaw<{ indexname: string }[]>`
+      SELECT indexname FROM pg_indexes
+      WHERE tablename = 'interactions'
+      AND indexname LIKE '%user_id_type_created_at%'
+    `;
+    if (result.length >= 1) {
+      pass(testName);
+    } else {
+      fail(testName, 'Composite index not found');
+    }
+  } catch (e) {
+    fail(testName, e);
+  }
+}
+
 // ============================================================================
 // Runner
 // ============================================================================
@@ -213,6 +231,7 @@ async function main(): Promise<void> {
   await testInteractionEnum();
   await testUserCRUD();
   await testSourceArticleRelation();
+  await testCompositeIndex();
 
   console.log('=' .repeat(50));
   console.log(`\n📊 Results: ${passCount} passed, ${failCount} failed\n`);
@@ -229,5 +248,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-    await pool.end();
   });

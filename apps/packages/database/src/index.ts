@@ -5,7 +5,6 @@
  * Uses Prisma 7 driver adapter pattern.
  * Reference: https://www.prisma.io/docs/orm/overview/databases/postgresql
  */
-import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, Prisma } from './generated/client/index.js';
 
@@ -15,7 +14,7 @@ import { PrismaClient, Prisma } from './generated/client/index.js';
 
 /**
  * Create a configured PrismaClient instance with pg adapter.
- * Prisma 7 requires driver adapters for all databases.
+ * Prisma 7 PrismaPg handles connection pooling internally.
  */
 const createPrismaClient = (): PrismaClient => {
   const connectionString = process.env.DATABASE_URL;
@@ -23,11 +22,8 @@ const createPrismaClient = (): PrismaClient => {
     throw new Error('DATABASE_URL environment variable is required');
   }
 
-  // Create pg Pool for connection pooling
-  const pool = new Pool({ connectionString });
-
-  // Create Prisma adapter
-  const adapter = new PrismaPg(pool);
+  // Prisma 7: PrismaPg manages connection pooling internally
+  const adapter = new PrismaPg({ connectionString });
 
   return new PrismaClient({
     adapter,

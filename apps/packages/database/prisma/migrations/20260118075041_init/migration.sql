@@ -1,5 +1,5 @@
--- Enable pgvector extension (must be first)
-CREATE EXTENSION IF NOT EXISTS vector;
+-- CreateExtension
+CREATE EXTENSION IF NOT EXISTS "vector";
 
 -- CreateEnum
 CREATE TYPE "InteractionType" AS ENUM ('SKIP', 'LIKE', 'OPEN', 'READ');
@@ -22,7 +22,7 @@ CREATE TABLE "sources" (
     "user_id" UUID,
     "type" VARCHAR(50) NOT NULL,
     "name" VARCHAR(255) NOT NULL,
-    "url" TEXT NOT NULL,
+    "url" VARCHAR(2048) NOT NULL,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -47,7 +47,7 @@ CREATE TABLE "articles" (
     "title" TEXT NOT NULL,
     "content" TEXT,
     "summary" TEXT,
-    "url" TEXT NOT NULL,
+    "url" VARCHAR(2048) NOT NULL,
     "image_url" TEXT,
     "categories" JSONB,
     "embedding" vector(768),
@@ -86,6 +86,12 @@ CREATE TABLE "user_interest_vectors" (
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "sources_url_key" ON "sources"("url");
+
+-- CreateIndex
+CREATE INDEX "articles_embedding_idx" ON "articles" USING hnsw ("embedding" vector_cosine_ops);
+
+-- CreateIndex
 CREATE UNIQUE INDEX "articles_source_id_external_id_key" ON "articles"("source_id", "external_id");
 
 -- CreateIndex
@@ -95,30 +101,31 @@ CREATE INDEX "interactions_user_id_idx" ON "interactions"("user_id");
 CREATE INDEX "interactions_article_id_idx" ON "interactions"("article_id");
 
 -- CreateIndex
+CREATE INDEX "interactions_user_id_type_created_at_idx" ON "interactions"("user_id", "type", "created_at");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "user_interest_vectors_user_id_key" ON "user_interest_vectors"("user_id");
+
+-- CreateIndex
+CREATE INDEX "user_interest_vectors_embedding_idx" ON "user_interest_vectors" USING hnsw ("interest_embedding" vector_cosine_ops);
 
 -- AddForeignKey
 ALTER TABLE "sources" ADD CONSTRAINT "sources_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "user_sources" ADD CONSTRAINT "user_sources_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_sources" ADD CONSTRAINT "user_sources_source_id_fkey" FOREIGN KEY ("source_id") REFERENCES "sources"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "user_sources" ADD CONSTRAINT "user_sources_source_id_fkey" FOREIGN KEY ("source_id") REFERENCES "sources"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "user_sources" ADD CONSTRAINT "user_sources_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "articles" ADD CONSTRAINT "articles_source_id_fkey" FOREIGN KEY ("source_id") REFERENCES "sources"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "interactions" ADD CONSTRAINT "interactions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "interactions" ADD CONSTRAINT "interactions_article_id_fkey" FOREIGN KEY ("article_id") REFERENCES "articles"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "user_interest_vectors" ADD CONSTRAINT "user_interest_vectors_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "interactions" ADD CONSTRAINT "interactions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- HNSW indexes for vector similarity search (Cosine distance)
--- Reference: https://github.com/pgvector/pgvector#hnsw
-CREATE INDEX articles_embedding_idx ON articles USING hnsw (embedding vector_cosine_ops);
-CREATE INDEX user_interest_vectors_embedding_idx ON user_interest_vectors USING hnsw (interest_embedding vector_cosine_ops);
+-- AddForeignKey
+ALTER TABLE "user_interest_vectors" ADD CONSTRAINT "user_interest_vectors_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
