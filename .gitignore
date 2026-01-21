@@ -157,6 +157,9 @@ yarn-error.log
 dist-node/
 *.tsbuildinfo
 
+# TanStack Router auto-generated
+**/routeTree.gen.ts
+
 # IDEs and editors
 .idea/
 .project
