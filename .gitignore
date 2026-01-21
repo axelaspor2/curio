@@ -153,6 +153,10 @@ tmp*
 npm-debug.log
 yarn-error.log
 
+# TypeScript build artifacts
+dist-node/
+*.tsbuildinfo
+
 # IDEs and editors
 .idea/
 .project
