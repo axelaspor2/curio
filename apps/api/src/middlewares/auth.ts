@@ -1,7 +1,7 @@
 import type { Context, Next } from "hono";
 
-const DEFINED_ROUTES = ["/api/auth"] as const;
-const PUBLIC_ROUTES = ["/api/health"] as const;
+const DEFINED_ROUTES = ["/api/auth", "/api/health"] as const;
+const PUBLIC_ROUTES = ["/api/auth", "/api/health"] as const;
 
 /**
  * 認証ミドルウェア
@@ -9,7 +9,7 @@ const PUBLIC_ROUTES = ["/api/health"] as const;
  * sessionMiddleware で設定されたセッション情報を使用して、
  * 保護されたルートへのアクセスを制御します。
  *
- * - DEFINED_ROUTES に含まれないパス → 認証スキップ（404 処理へ）
+ * - DEFINED_ROUTES に含まれないパス → 認証スキップ（notFound ハンドラーへ）
  * - PUBLIC_ROUTES に含まれるパス → 認証スキップ（公開エンドポイント）
  * - それ以外 → セッション検証を実行し、無効な場合は 401 を返す
  */
