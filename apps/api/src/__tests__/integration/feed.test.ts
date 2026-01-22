@@ -3,15 +3,10 @@
  */
 
 import { describe, it, expect } from "vitest";
-import app from "../../app.js";
-import { createTestSource, createTestArticles, createTestCategories } from "../fixtures.js";
+import app from "../test-app.js";
+import { createTestSource, createTestArticles, createTestCategories, createTestInteraction } from "../fixtures.js";
 import { createTestUserWithSession, authenticatedRequest, unauthenticatedRequest } from "../helpers.js";
 import type { FeedResponse } from "../../schemas/feed.js";
-import { prisma } from "@curio/database";
-
-// Prisma 7 driver adapter使用時の型問題を回避
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = prisma as any;
 
 describe("GET /api/feed", () => {
   it("フィードが正しく取得できる", async () => {
@@ -56,16 +51,10 @@ describe("GET /api/feed", () => {
     const { user, session } = await createTestUserWithSession();
     const source = await createTestSource();
     const articles = await createTestArticles(source.id, [], 5);
-    const articleId = articles.at(0)!.id as string;
+    const articleId = articles.at(0)!.id;
 
     // LIKEインタラクションを作成
-    await db.interaction.create({
-      data: {
-        userId: user.id,
-        articleId,
-        type: "LIKE",
-      },
-    });
+    await createTestInteraction(user.id, articleId, "LIKE");
 
     const client = authenticatedRequest(app, session.token);
 

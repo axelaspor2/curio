@@ -4,13 +4,8 @@
 
 import { describe, it, expect } from "vitest";
 import { feedService } from "../../services/feed.service.js";
-import { createTestSource, createTestArticles, createTestCategories } from "../fixtures.js";
+import { createTestSource, createTestArticles, createTestCategories, createTestInteraction } from "../fixtures.js";
 import { createTestUserWithSession } from "../helpers.js";
-import { prisma } from "@curio/database";
-
-// Prisma 7 driver adapter使用時の型問題を回避
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = prisma as any;
 
 describe("feedService", () => {
   describe("getFeed", () => {
@@ -53,16 +48,10 @@ describe("feedService", () => {
       const { user } = await createTestUserWithSession();
       const source = await createTestSource();
       const articles = await createTestArticles(source.id);
-      const articleId = articles.at(0)!.id as string;
+      const articleId = articles.at(0)!.id;
 
       // LIKEインタラクションを作成
-      await db.interaction.create({
-        data: {
-          userId: user.id,
-          articleId,
-          type: "LIKE",
-        },
-      });
+      await createTestInteraction(user.id, articleId, "LIKE");
 
       // Act
       const result = await feedService.getFeed(user.id, { limit: 10 });

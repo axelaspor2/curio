@@ -5,7 +5,7 @@
  */
 
 import { prisma } from "@curio/database";
-import { ResultAsync } from "neverthrow";
+import { ResultAsync, errAsync } from "neverthrow";
 import { fromPrisma } from "../lib/from-promise.js";
 import { NotFoundError, type PrismaError } from "../lib/errors.js";
 import type { InteractionType } from "../schemas/interactions.js";
@@ -39,11 +39,7 @@ export const interactionService = {
       }),
     ).andThen((article) => {
       if (!article) {
-        return ResultAsync.fromSafePromise<InteractionResult, NotFoundError>(
-          Promise.resolve({} as InteractionResult),
-        ).map(() => {
-          throw new NotFoundError("記事が見つかりません");
-        });
+        return errAsync(new NotFoundError("記事が見つかりません"));
       }
 
       // インタラクションを作成
