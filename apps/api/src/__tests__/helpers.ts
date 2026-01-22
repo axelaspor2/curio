@@ -5,13 +5,16 @@
  */
 
 import { prisma } from "@curio/database";
-import type { Hono } from "hono";
+
+// Prisma 7 driver adapter使用時の型問題を回避
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const db = prisma as any;
 
 /**
  * テスト用ユーザーとセッションを作成
  */
 export const createTestUserWithSession = async () => {
-  const user = await prisma.user.create({
+  const user = await db.user.create({
     data: {
       email: `test-${Date.now()}@example.com`,
       name: "Test User",
@@ -19,7 +22,7 @@ export const createTestUserWithSession = async () => {
     },
   });
 
-  const session = await prisma.session.create({
+  const session = await db.session.create({
     data: {
       userId: user.id,
       token: `test-session-token-${Date.now()}`,
@@ -31,9 +34,15 @@ export const createTestUserWithSession = async () => {
 };
 
 /**
+ * Honoアプリケーション型（OpenAPIHono互換）
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AppType = { request: (path: string, init?: RequestInit) => Response | Promise<Response> };
+
+/**
  * 認証済みリクエスト用ヘルパー
  */
-export const authenticatedRequest = (app: Hono, token: string) => {
+export const authenticatedRequest = (app: AppType, token: string) => {
   return {
     get: (path: string) =>
       app.request(path, {
@@ -54,7 +63,7 @@ export const authenticatedRequest = (app: Hono, token: string) => {
 /**
  * 未認証リクエスト用ヘルパー
  */
-export const unauthenticatedRequest = (app: Hono) => {
+export const unauthenticatedRequest = (app: AppType) => {
   return {
     get: (path: string) => app.request(path),
     post: (path: string, body: unknown) =>
