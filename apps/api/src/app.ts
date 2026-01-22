@@ -6,6 +6,7 @@ import { logger } from "./lib/logger.js";
 import { authMiddleware } from "./middlewares/auth.js";
 import { sessionMiddleware } from "./middlewares/session.js";
 import { authRouter } from "./routes/auth.js";
+import { categoriesRouter } from "./routes/categories.js";
 import { healthRouter } from "./routes/health.js";
 
 const corsOrigins = process.env.CORS_ORIGINS?.split(",") ?? [
@@ -31,6 +32,7 @@ app.use(
 
 // Routes
 app.route("/api/auth", authRouter);
+app.route("/api/categories", categoriesRouter);
 app.route("/api/health", healthRouter);
 
 // OpenAPI JSON
