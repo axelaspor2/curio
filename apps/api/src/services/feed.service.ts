@@ -57,6 +57,16 @@ export const feedService = {
   ): ResultAsync<FeedResult, PrismaError> => {
     const { limit, cursor, categoryId } = options;
 
+    // カーソルをデコード (format: "publishedAt_id" or "null_id")
+    let cursorPublishedAt: Date | null = null;
+    let cursorId: string | null = null;
+    if (cursor) {
+      const decoded = Buffer.from(cursor, "base64").toString("utf-8");
+      const [publishedAtStr, id] = decoded.split("_");
+      cursorPublishedAt = publishedAtStr === "null" ? null : new Date(publishedAtStr);
+      cursorId = id;
+    }
+
     // インタラクション済みの記事IDを取得するサブクエリ
     return fromPrisma<ArticleFromDb[]>(
       db.article.findMany({
@@ -79,12 +89,20 @@ export const feedService = {
                 },
               }
             : {}),
-          // カーソルがある場合は、そのIDより後の記事を取得
-          ...(cursor
+          // カーソルがある場合は、そのpublishedAt/IDより後の記事を取得
+          ...(cursorId
             ? {
-                id: {
-                  lt: cursor,
-                },
+                OR: [
+                  // publishedAtがカーソルより古い場合
+                  ...(cursorPublishedAt
+                    ? [{ publishedAt: { lt: cursorPublishedAt } }]
+                    : []),
+                  // publishedAtが同じ場合はIDで比較
+                  {
+                    publishedAt: cursorPublishedAt,
+                    id: { lt: cursorId },
+                  },
+                ],
               }
             : {}),
         },
@@ -121,6 +139,14 @@ export const feedService = {
       const resultArticles = hasMore ? articles.slice(0, limit) : articles;
       const lastArticle = resultArticles.at(-1);
 
+      // カーソルをエンコード (format: "publishedAt_id")
+      const nextCursor =
+        hasMore && lastArticle
+          ? Buffer.from(
+              `${lastArticle.publishedAt?.toISOString() ?? "null"}_${lastArticle.id}`,
+            ).toString("base64")
+          : null;
+
       return {
         articles: resultArticles.map((article) => ({
           id: article.id,
@@ -139,7 +165,7 @@ export const feedService = {
             name: ac.category.name,
           })),
         })),
-        nextCursor: hasMore && lastArticle ? lastArticle.id : null,
+        nextCursor,
         hasMore,
       };
     });
