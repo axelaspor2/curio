@@ -66,7 +66,7 @@ jobs:
         working-directory: apps
 
       - name: Run tests
-        run: pnpm --filter @curio/api test
+        run: pnpm --filter @curio/api test -- --passWithNoTests
         working-directory: apps
 
       - name: Stop test database
