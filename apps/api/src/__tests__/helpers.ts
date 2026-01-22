@@ -2,35 +2,66 @@
  * テスト用ヘルパー関数
  *
  * 認証モックやリクエストヘルパーなどを提供します。
+ * モジュール解決の問題を回避するため、生のSQLを使用します。
  */
 
-import { prisma } from "@curio/database";
+import { pool } from "./setup.js";
+import { randomUUID } from "crypto";
 
-// Prisma 7 driver adapter使用時の型問題を回避
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = prisma as any;
+// 型定義
+export interface TestUser {
+  id: string;
+  email: string;
+  name: string;
+  emailVerified: boolean;
+}
+
+export interface TestSession {
+  id: string;
+  userId: string;
+  token: string;
+  expiresAt: Date;
+}
 
 /**
  * テスト用ユーザーとセッションを作成
  */
-export const createTestUserWithSession = async () => {
-  const user = await db.user.create({
-    data: {
+export const createTestUserWithSession = async (): Promise<{
+  user: TestUser;
+  session: TestSession;
+}> => {
+  const client = await pool.connect();
+  try {
+    const user: TestUser = {
+      id: randomUUID(),
       email: `test-${Date.now()}@example.com`,
       name: "Test User",
       emailVerified: true,
-    },
-  });
+    };
 
-  const session = await db.session.create({
-    data: {
+    await client.query(
+      `INSERT INTO users (id, email, name, email_verified, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, NOW(), NOW())`,
+      [user.id, user.email, user.name, user.emailVerified]
+    );
+
+    const session: TestSession = {
+      id: randomUUID(),
       userId: user.id,
       token: `test-session-token-${Date.now()}`,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1日後
-    },
-  });
+    };
 
-  return { user, session };
+    await client.query(
+      `INSERT INTO sessions (id, user_id, token, expires_at, created_at, updated_at)
+       VALUES ($1, $2, $3, $4, NOW(), NOW())`,
+      [session.id, session.userId, session.token, session.expiresAt]
+    );
+
+    return { user, session };
+  } finally {
+    client.release();
+  }
 };
 
 /**
