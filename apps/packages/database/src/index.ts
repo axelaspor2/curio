@@ -77,10 +77,11 @@ export * from "./generated/client/index.js";
  */
 export type {
   Article,
+  Category,
   Interaction,
   InteractionType,
   Source,
   User,
+  UserCategoryPreference,
   UserInterestVector,
-  UserSource,
 } from "./generated/client/index.js";
