@@ -28,13 +28,13 @@ importers:
         version: link:../packages/database
       '@hono/node-server':
         specifier: ^1.14.1
-        version: 1.19.6(hono@4.10.6)
+        version: 1.19.6(hono@4.11.5)
       better-auth:
         specifier: ^1.2.8
         version: 1.4.13(@prisma/client@7.2.0(prisma@7.2.0(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(mysql2@3.15.3)(pg@8.16.3)(prisma@7.2.0(@types/react@19.2.8)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       hono:
-        specifier: ^4.7.10
-        version: 4.10.6
+        specifier: ^4.11.4
+        version: 4.11.5
       pino:
         specifier: ^10.2.0
         version: 10.2.0
@@ -88,6 +88,9 @@ importers:
 
   web:
     dependencies:
+      '@curio/api':
+        specifier: workspace:*
+        version: link:../api
       '@radix-ui/react-slot':
         specifier: ^1.2.0
         version: 1.2.4(@types/react@19.2.8)(react@19.2.3)
@@ -2339,6 +2342,10 @@ snapshots:
   '@hono/node-server@1.19.6(hono@4.10.6)':
     dependencies:
       hono: 4.10.6
+
+  '@hono/node-server@1.19.6(hono@4.11.5)':
+    dependencies:
+      hono: 4.11.5
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:

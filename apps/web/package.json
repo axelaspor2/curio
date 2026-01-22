@@ -21,7 +21,8 @@
     "clsx": "^2.1.1",
     "tailwind-merge": "^3.3.1",
     "lucide-react": "^0.511.0",
-    "hono": "^4.11.4"
+    "hono": "^4.11.4",
+    "@curio/api": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.2.0",
