@@ -6,6 +6,7 @@ export default defineConfig({
     environment: "node",
     include: ["src/__tests__/**/*.test.ts"],
     setupFiles: ["src/__tests__/setup.ts"],
+    passWithNoTests: true,
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],
