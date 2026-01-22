@@ -7,6 +7,7 @@ import { authMiddleware } from "./middlewares/auth.js";
 import { sessionMiddleware } from "./middlewares/session.js";
 import { authRouter } from "./routes/auth.js";
 import { categoriesRouter } from "./routes/categories.js";
+import { feedRouter } from "./routes/feed.js";
 import { healthRouter } from "./routes/health.js";
 import { interactionsRouter } from "./routes/interactions.js";
 import { usersRouter } from "./routes/users.js";
@@ -35,6 +36,7 @@ app.use(
 // Routes
 app.route("/api/auth", authRouter);
 app.route("/api/categories", categoriesRouter);
+app.route("/api/feed", feedRouter);
 app.route("/api/health", healthRouter);
 app.route("/api/interactions", interactionsRouter);
 app.route("/api/users", usersRouter);
