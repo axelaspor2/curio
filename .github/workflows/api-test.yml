@@ -35,14 +35,18 @@ jobs:
         with:
           node-version: "24"
           cache: "pnpm"
+          cache-dependency-path: apps/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+        working-directory: apps
 
       - name: Start test database
         run: docker compose up -d postgres-test
+        working-directory: apps
 
       - name: Wait for database to be ready
+        working-directory: apps
         run: |
           for i in {1..30}; do
             if docker compose exec -T postgres-test pg_isready -U curio_test -d curio_test; then
@@ -55,13 +59,17 @@ jobs:
 
       - name: Generate Prisma Client
         run: pnpm --filter @curio/database generate
+        working-directory: apps
 
       - name: Run database migrations
         run: pnpm --filter @curio/database db:migrate:deploy
+        working-directory: apps
 
       - name: Run tests
         run: pnpm --filter @curio/api test
+        working-directory: apps
 
       - name: Stop test database
         if: always()
         run: docker compose down
+        working-directory: apps
