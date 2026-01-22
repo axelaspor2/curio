@@ -36,6 +36,26 @@ export const createTestSource = async () => {
 };
 
 /**
+ * テスト用インタラクションを作成
+ */
+export const createTestInteraction = async (
+  userId: string,
+  articleId: string,
+  type: "SKIP" | "LIKE" | "OPEN" | "READ",
+  readingTimeSec?: number,
+) => {
+  const interaction = await prisma.interaction.create({
+    data: {
+      userId,
+      articleId,
+      type,
+      readingTimeSec: readingTimeSec ?? null,
+    },
+  });
+  return interaction;
+};
+
+/**
  * テスト用記事を作成
  */
 export const createTestArticles = async (
@@ -52,22 +72,15 @@ export const createTestArticles = async (
         title: `Test Article ${i + 1}`,
         content: `This is test content for article ${i + 1}`,
         summary: `Summary of article ${i + 1}`,
-        url: `https://example.com/article-${i + 1}`,
+        url: `https://example.com/article-${i + 1}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
         imageUrl: `https://example.com/image-${i + 1}.jpg`,
         publishedAt: new Date(Date.now() - i * 3600000), // 1時間ずつ古い
-        categories:
-          categoryIds.length > 0
-            ? {
-                create: categoryIds.map((categoryId) => ({
-                  categoryId,
-                  confidence: 0.9,
-                })),
-              }
-            : undefined,
-      },
-      include: {
-        source: true,
-        categories: { include: { category: true } },
+        articleCategories: categoryIds.length > 0 ? {
+          create: categoryIds.map((categoryId) => ({
+            categoryId,
+            confidence: 0.9,
+          })),
+        } : undefined,
       },
     });
     articles.push(article);

@@ -13,12 +13,13 @@ vi.mock("../lib/auth.js", () => ({
   auth: {
     api: {
       getSession: async ({ headers }: { headers: Headers }) => {
+        const { prisma: db } = await import("@curio/database");
         const cookie = headers.get("cookie");
         const token = cookie?.match(/better-auth\.session_token=([^;]+)/)?.[1];
         if (!token) return null;
-        const session = await prisma.session.findFirst({ where: { token } });
+        const session = await db.session.findFirst({ where: { token } });
         if (!session || session.expiresAt < new Date()) return null;
-        const user = await prisma.user.findUnique({ where: { id: session.userId } });
+        const user = await db.user.findUnique({ where: { id: session.userId } });
         if (!user) return null;
         return { user, session };
       },
@@ -29,7 +30,7 @@ vi.mock("../lib/auth.js", () => ({
 
 beforeAll(async () => {
   // テスト用DBの接続確認
-  await prisma.$connect();
+  await prisma.$queryRaw`SELECT 1`;
 });
 
 afterAll(async () => {
