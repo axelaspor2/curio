@@ -1,0 +1,67 @@
+name: API Test
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/api/**"
+      - "packages/database/**"
+  pull_request:
+    paths:
+      - "apps/api/**"
+      - "packages/database/**"
+
+jobs:
+  test:
+    name: Run API Tests
+    runs-on: ubuntu-latest
+
+    env:
+      DATABASE_URL: postgresql://curio_test:curio_test_password@localhost:5434/curio_test
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Start test database
+        run: docker compose up -d postgres-test
+
+      - name: Wait for database to be ready
+        run: |
+          for i in {1..30}; do
+            if docker compose exec -T postgres-test pg_isready -U curio_test -d curio_test; then
+              echo "Database is ready"
+              break
+            fi
+            echo "Waiting for database... ($i/30)"
+            sleep 1
+          done
+
+      - name: Generate Prisma Client
+        run: pnpm --filter @curio/database generate
+
+      - name: Run database migrations
+        run: pnpm --filter @curio/database db:migrate:deploy
+
+      - name: Run tests
+        run: pnpm --filter @curio/api test
+
+      - name: Stop test database
+        if: always()
+        run: docker compose down
