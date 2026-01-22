@@ -27,22 +27,50 @@
 
 ---
 
+## **MVP 範囲**
+
+### **含む機能**
+
+- 記事取得・表示
+- スワイプ UI・学習機能
+- 認証・ユーザー管理
+- カテゴリ選択（コールドスタート対策）
+- カテゴリフィルタリング
+
+### **含まない機能（MVP 後）**
+
+- ユーザーによるソース追加
+- X (Twitter) 連携
+- Podcast 音声の文字起こし・要約
+- プッシュ通知
+- ブックマーク・シェア機能
+
+---
+
 ## **機能仕様**
 
 ### **学習インプット**
 
-| インプット   | 説明                        |
-| ------------ | --------------------------- |
-| スワイプ     | 右: 興味あり / 左: スキップ |
-| 記事オープン | タップして詳細を開いた      |
-| 滞在時間     | 記事を読んでいた時間        |
+| インプット     | 説明                        |
+| -------------- | --------------------------- |
+| スワイプ       | 右: 興味あり / 左: スキップ |
+| 記事オープン   | タップして詳細を開いた      |
+| 滞在時間       | 記事を読んでいた時間        |
+| カテゴリ選択   | 初回セットアップで選択      |
 
-※ 明示的なタグ/カテゴリ選択は MVP では実装しない
+※ 初回のカテゴリ選択でコールドスタート問題を軽減
 
 ### **コンテンツソース**
 
 - **運営提供**: 固定のソース（MVP では 3 つ程度）
-- **ユーザー追加**: RSS URL などを自分で登録可能
+- **ユーザー追加**: MVP 後に実装予定
+
+### **カテゴリ機能**
+
+- 運営が定義したカテゴリ（テクノロジー、ビジネス、ライフスタイル等）
+- LLM が記事を自動分類
+- ユーザーはカテゴリでフィード絞り込み可能
+- 初回セットアップで興味カテゴリを選択（コールドスタート対策）
 
 ### **対応ソース種別**
 
@@ -79,75 +107,70 @@
 
 ---
 
-## **データモデル (Prisma スキーマ)**
+## **データモデル**
 
-### **users**
+詳細は [docs/database.md](./database.md) を参照。
+
+### **テーブル一覧**
+
+| テーブル                    | 説明                     |
+| --------------------------- | ------------------------ |
+| `users`                     | ユーザー情報             |
+| `sources`                   | 情報ソース（運営提供）   |
+| `categories`                | カテゴリマスタ           |
+| `articles`                  | 記事                     |
+| `article_categories`        | 記事×カテゴリ            |
+| `user_category_preferences` | ユーザーカテゴリ興味度   |
+| `interactions`              | インタラクション         |
+| `user_interest_vectors`     | 興味ベクトル             |
+| `sessions`                  | Better Auth: セッション  |
+| `accounts`                  | Better Auth: アカウント  |
+| `verifications`             | Better Auth: 認証        |
+
+### **主要モデル（Prisma）**
+
+#### users
 
 ```prisma
 model User {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email     String   @unique @db.VarChar(255)
-  name      String?  @db.VarChar(255)
-  avatarUrl String?  @map("avatar_url")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String   @db.Text
+  name          String   @db.Text
+  avatarUrl     String?  @map("avatar_url") @db.Text
+  emailVerified Boolean  @default(false) @map("email_verified")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  sources        Source[]
-  userSources    UserSource[]
-  interactions   Interaction[]
-  interestVector UserInterestVector?
+  interestVector      UserInterestVector?
+  categoryPreferences UserCategoryPreference[]
+  interactions        Interaction[]
+  sessions            Session[]
+  accounts            Account[]
 
+  @@unique([email])
   @@map("users")
 }
 ```
 
-### **sources**
+#### categories
 
 ```prisma
-model Source {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String?  @map("user_id") @db.Uuid  // NULL = 運営提供
-  type      String   @db.VarChar(50)  // 'rss', 'twitter', etc.
-  name      String   @db.VarChar(255)
-  url       String
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at")
+model Category {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug         String   @unique @db.Text
+  name         String   @db.Text
+  description  String?  @db.Text
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  articles    Article[]
-  subscribers UserSource[]
+  articles        ArticleCategory[]
+  userPreferences UserCategoryPreference[]
 
-  @@map("sources")
+  @@map("categories")
 }
 ```
 
-### **articles**
-
-```prisma
-model Article {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sourceId    String   @map("source_id") @db.Uuid
-  externalId  String?  @map("external_id") @db.VarChar(255)
-  title       String
-  content     String?
-  summary     String?      // LLM 生成の要約
-  url         String
-  imageUrl    String?  @map("image_url")
-  categories  Json?        // LLM 生成のカテゴリ
-  embedding   Unsupported("vector(768)")?  // pgvector
-  publishedAt DateTime? @map("published_at")
-  fetchedAt   DateTime  @default(now()) @map("fetched_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-
-  source       Source        @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  interactions Interaction[]
-
-  @@unique([sourceId, externalId])
-  @@map("articles")
-}
-```
-
-### **interactions**
+#### interactions
 
 ```prisma
 enum InteractionType {
@@ -163,48 +186,15 @@ model Interaction {
   articleId      String          @map("article_id") @db.Uuid
   type           InteractionType
   readingTimeSec Int?            @map("reading_time_sec")
-  createdAt      DateTime        @default(now()) @map("created_at")
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([articleId])
+  @@index([userId, type])
   @@map("interactions")
-}
-```
-
-### **user_interest_vectors**
-
-```prisma
-model UserInterestVector {
-  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId            String    @unique @map("user_id") @db.Uuid
-  interestEmbedding Unsupported("vector(768)")? @map("interest_embedding")
-  lastCalculatedAt  DateTime? @map("last_calculated_at")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("user_interest_vectors")
-}
-```
-
-### **user_sources**
-
-```prisma
-model UserSource {
-  userId       String   @map("user_id") @db.Uuid
-  sourceId     String   @map("source_id") @db.Uuid
-  isSubscribed Boolean  @default(true) @map("is_subscribed")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  source Source @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-
-  @@id([userId, sourceId])
-  @@map("user_sources")
 }
 ```
 
@@ -227,12 +217,18 @@ model UserSource {
    - `READ` で滞在時間が長いものも重みを増やす
 3. 計算結果を `user_interest_vectors` に保存
 
+### **カテゴリベースのリランキング**
+
+1. `user_category_preferences` からユーザーのカテゴリ興味度を取得
+2. 記事のカテゴリ（`article_categories`）と照合
+3. 興味度スコアに基づいて検索結果をリランキング
+
 ### **フィード生成**
 
 ```typescript
 // pgvector + HNSW による高速類似検索
 const similar = await prisma.$queryRaw`
-  SELECT id, title, 
+  SELECT id, title,
          1 - (embedding <=> ${userVector}::vector) AS similarity
   FROM articles
   ORDER BY embedding <=> ${userVector}::vector
@@ -249,9 +245,9 @@ const similar = await prisma.$queryRaw`
 - [x] pnpm モノレポセットアップ
 - [x] Docker Compose (PostgreSQL + pgvector)
 - [x] Prisma 7 + Driver Adapter 設定
-- [x] DB スキーマ定義 (6 モデル)
+- [x] DB スキーマ定義
 - [x] pgvector 拡張 + HNSW インデックス
-- [x] 統合テスト (7 tests passed)
+- [x] 統合テスト
 
 ### **Phase 2: コンテンツ取得**
 
@@ -265,19 +261,23 @@ const similar = await prisma.$queryRaw`
 - [ ] Vertex AI Gemini 3 Flash 接続
 - [ ] 記事分類・要約パイプライン
 - [ ] gemini-embedding-001 でベクトル生成
+- [ ] カテゴリ自動分類
 
 ### **Phase 4: フロントエンド**
 
-- [ ] React + Vite 初期化 (`apps/web`)
+- [x] React + Vite 初期化 (`apps/web`)
 - [ ] スワイプ UI コンポーネント
 - [ ] タイムライン表示
 - [ ] 記事詳細モーダル
+- [ ] カテゴリ選択画面（コールドスタート）
+- [ ] カテゴリフィルター UI
 
 ### **Phase 5: パーソナライズ**
 
 - [ ] インタラクション保存 API
 - [ ] ユーザー興味ベクトル計算バッチ
 - [ ] パーソナライズドフィード API
+- [ ] カテゴリベースリランキング
 
 ### **Phase 6: 認証・仕上げ**
 
