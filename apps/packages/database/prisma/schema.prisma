@@ -3,6 +3,11 @@ generator client {
   output   = "../src/generated/client"
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "../docs/erd.md"
+}
+
 datasource db {
   provider = "postgresql"
   // URL is configured in prisma.config.ts (Prisma 7+ requirement)
