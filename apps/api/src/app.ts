@@ -8,6 +8,7 @@ import { sessionMiddleware } from "./middlewares/session.js";
 import { authRouter } from "./routes/auth.js";
 import { categoriesRouter } from "./routes/categories.js";
 import { healthRouter } from "./routes/health.js";
+import { interactionsRouter } from "./routes/interactions.js";
 import { usersRouter } from "./routes/users.js";
 
 const corsOrigins = process.env.CORS_ORIGINS?.split(",") ?? [
@@ -35,6 +36,7 @@ app.use(
 app.route("/api/auth", authRouter);
 app.route("/api/categories", categoriesRouter);
 app.route("/api/health", healthRouter);
+app.route("/api/interactions", interactionsRouter);
 app.route("/api/users", usersRouter);
 
 // OpenAPI JSON
