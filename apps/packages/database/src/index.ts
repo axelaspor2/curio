@@ -5,9 +5,10 @@
  * Uses Prisma 7 driver adapter pattern.
  * Reference: https://www.prisma.io/docs/orm/overview/databases/postgresql
  */
-import { Pool } from 'pg';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, Prisma } from './generated/client/index.js';
+
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
+import { Prisma, PrismaClient } from "./generated/client/index.js";
 
 // ============================================================================
 // Prisma Client Singleton with Driver Adapter (Prisma 7+)
@@ -20,7 +21,7 @@ import { PrismaClient, Prisma } from './generated/client/index.js';
 const createPrismaClient = (): PrismaClient => {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
-    throw new Error('DATABASE_URL environment variable is required');
+    throw new Error("DATABASE_URL environment variable is required");
   }
 
   // Create pg Pool for connection pooling
@@ -31,10 +32,7 @@ const createPrismaClient = (): PrismaClient => {
 
   return new PrismaClient({
     adapter,
-    log:
-      process.env.NODE_ENV === 'production'
-        ? ['error']
-        : ['query', 'error', 'warn'],
+    log: process.env.NODE_ENV === "production" ? ["error"] : ["query", "error", "warn"],
   });
 };
 
@@ -52,7 +50,7 @@ const globalForPrisma = globalThis as unknown as {
  */
 export const prisma: PrismaClient = globalForPrisma.prisma ?? createPrismaClient();
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
 
@@ -67,7 +65,7 @@ export { PrismaClient };
 export { Prisma };
 
 // All generated types and enums
-export * from './generated/client/index.js';
+export * from "./generated/client/index.js";
 
 // ============================================================================
 // Utility Types (for application code)
@@ -78,11 +76,11 @@ export * from './generated/client/index.js';
  * These provide proper typing without needing to import from generated client.
  */
 export type {
-  User,
-  Source,
   Article,
   Interaction,
-  UserSource,
-  UserInterestVector,
   InteractionType,
-} from './generated/client/index.js';
+  Source,
+  User,
+  UserInterestVector,
+  UserSource,
+} from "./generated/client/index.js";

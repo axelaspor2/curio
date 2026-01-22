@@ -12,17 +12,22 @@ datasource db {
 // Run: prisma migrate dev --create-only, then add: CREATE EXTENSION IF NOT EXISTS vector;
 
 model User {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email     String   @unique @db.VarChar(255)
-  name      String?  @db.VarChar(255)
-  avatarUrl String?  @map("avatar_url")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String   @unique @db.VarChar(255)
+  name          String   @db.VarChar(255)
+  avatarUrl     String?  @map("avatar_url")
+  emailVerified Boolean  @default(false) @map("email_verified")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
 
   sources        Source[]
   userSources    UserSource[]
   interactions   Interaction[]
   interestVector UserInterestVector?
+
+  // Better Auth
+  sessions Session[]
+  accounts Account[]
 
   @@map("users")
 }
@@ -114,4 +119,57 @@ model UserInterestVector {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_interest_vectors")
+}
+
+// ============================================================================
+// Better Auth Models
+// ============================================================================
+
+model Session {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique @db.VarChar(255)
+  expiresAt DateTime @map("expires_at") @db.Timestamp(6)
+  ipAddress String?  @map("ip_address") @db.VarChar(45)
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                String    @map("user_id") @db.Uuid
+  accountId             String    @map("account_id") @db.VarChar(255)
+  providerId            String    @map("provider_id") @db.VarChar(50)
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamp(6)
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamp(6)
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  identifier String   @db.VarChar(255)
+  value      String
+  expiresAt  DateTime @map("expires_at") @db.Timestamp(6)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([identifier])
+  @@map("verifications")
 }
