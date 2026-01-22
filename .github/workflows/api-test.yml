@@ -58,7 +58,7 @@ jobs:
           done
 
       - name: Generate Prisma Client
-        run: pnpm --filter @curio/database generate
+        run: pnpm --filter @curio/database db:generate
         working-directory: apps
 
       - name: Run database migrations
