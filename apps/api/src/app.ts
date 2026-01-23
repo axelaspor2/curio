@@ -13,28 +13,26 @@ const corsOrigins = process.env.CORS_ORIGINS?.split(",") ?? [
   "http://localhost:5173",
 ];
 
-const app = new OpenAPIHono();
+const baseApp = new OpenAPIHono();
 
-// Middlewares
-app.use(sessionMiddleware);
-app.use(authMiddleware);
-app.use(
-  cors({
-    origin: corsOrigins,
-    allowHeaders: ["Content-Type", "Authorization"],
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    exposeHeaders: ["Content-Length"],
-    maxAge: 86400,
-    credentials: true,
-  }),
-);
-
-// Routes
-app.route("/api/auth", authRouter);
-app.route("/api/health", healthRouter);
+const app = baseApp
+  .use(sessionMiddleware)
+  .use(authMiddleware)
+  .use(
+    cors({
+      origin: corsOrigins,
+      allowHeaders: ["Content-Type", "Authorization"],
+      allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      exposeHeaders: ["Content-Length"],
+      maxAge: 86400,
+      credentials: true,
+    }),
+  )
+  .route("/api/auth", authRouter)
+  .route("/api/health", healthRouter);
 
 // OpenAPI JSON
-app.doc("/api/docs/openapi.json", {
+baseApp.doc("/api/docs/openapi.json", {
   openapi: "3.1.0",
   info: {
     title: "Curio API",
@@ -44,14 +42,14 @@ app.doc("/api/docs/openapi.json", {
 });
 
 // Swagger UI
-app.get("/api/docs", swaggerUI({ url: "/api/docs/openapi.json" }));
+baseApp.get("/api/docs", swaggerUI({ url: "/api/docs/openapi.json" }));
 
 // Error handlers
-app.notFound((c: Context) => {
+baseApp.notFound((c: Context) => {
   return c.json({ error: "Not Found" }, 404);
 });
 
-app.onError((err: Error, c: Context) => {
+baseApp.onError((err: Error, c: Context) => {
   logger.error({ err, path: c.req.path, method: c.req.method }, "Unhandled error");
   return c.json({ error: "Internal Server Error" }, 500);
 });

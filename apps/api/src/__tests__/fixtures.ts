@@ -6,15 +6,11 @@
 
 import { prisma } from "@curio/database";
 
-// Prisma 7 driver adapter使用時の型問題を回避
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = prisma as any;
-
 /**
  * テスト用カテゴリを作成
  */
 export const createTestCategories = async () => {
-  const categories = await db.category.createManyAndReturn({
+  const categories = await prisma.category.createManyAndReturn({
     data: [
       { slug: "technology", name: "テクノロジー", description: "Tech news", displayOrder: 1 },
       { slug: "business", name: "ビジネス", description: "Business news", displayOrder: 2 },
@@ -29,7 +25,7 @@ export const createTestCategories = async () => {
  * テスト用ソースを作成
  */
 export const createTestSource = async () => {
-  const source = await db.source.create({
+  const source = await prisma.source.create({
     data: {
       type: "rss",
       name: "Test News Source",
@@ -50,7 +46,7 @@ export const createTestArticles = async (
   const articles = [];
 
   for (let i = 0; i < count; i++) {
-    const article = await db.article.create({
+    const article = await prisma.article.create({
       data: {
         sourceId,
         title: `Test Article ${i + 1}`,
