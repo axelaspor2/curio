@@ -10,10 +10,6 @@ import { fromPrisma } from "../lib/from-promise.js";
 import { NotFoundError, type PrismaError } from "../lib/errors.js";
 import type { UserPreference } from "../schemas/users.js";
 
-// Prisma 7 driver adapter使用時の型問題を回避
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = prisma as any;
-
 type CategoryIds = { id: string }[];
 
 export const userService = {
@@ -27,7 +23,7 @@ export const userService = {
   ): ResultAsync<UserPreference[], PrismaError | NotFoundError> =>
     // まずカテゴリの存在確認
     fromPrisma<CategoryIds>(
-      db.category.findMany({
+      prisma.category.findMany({
         where: { id: { in: categoryIds } },
         select: { id: true },
       }),
@@ -45,7 +41,7 @@ export const userService = {
 
       // 既存の設定を削除して新規作成（トランザクション）
       return fromPrisma<UserPreference[]>(
-        db.$transaction(async (tx: typeof db) => {
+        prisma.$transaction(async (tx: typeof prisma) => {
           // 既存のカテゴリ設定を削除
           await tx.userCategoryPreference.deleteMany({
             where: { userId },
