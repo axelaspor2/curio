@@ -12,21 +12,22 @@ import { prisma } from "@curio/database";
 export const createTestUserWithSession = async () => {
   const user = await prisma.user.create({
     data: {
-      email: `test-${Date.now()}@example.com`,
+      email: `test-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`,
       name: "Test User",
       emailVerified: true,
     },
   });
 
+  const token = `test-session-token-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const session = await prisma.session.create({
     data: {
       userId: user.id,
-      token: `test-session-token-${Date.now()}`,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1日後
+      token,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
     },
   });
 
-  return { user, session };
+  return { user, session: { ...session, token } };
 };
 
 /**
