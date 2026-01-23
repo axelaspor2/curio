@@ -6,15 +6,11 @@
 
 import { prisma } from "@curio/database";
 
-// Prisma 7 driver adapter使用時の型問題を回避
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = prisma as any;
-
 /**
  * テスト用ユーザーとセッションを作成
  */
 export const createTestUserWithSession = async () => {
-  const user = await db.user.create({
+  const user = await prisma.user.create({
     data: {
       email: `test-${Date.now()}@example.com`,
       name: "Test User",
@@ -22,7 +18,7 @@ export const createTestUserWithSession = async () => {
     },
   });
 
-  const session = await db.session.create({
+  const session = await prisma.session.create({
     data: {
       userId: user.id,
       token: `test-session-token-${Date.now()}`,

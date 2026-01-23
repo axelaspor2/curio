@@ -32,11 +32,7 @@ export const userService = {
       if (categories.length !== categoryIds.length) {
         const foundIds = new Set(categories.map((c) => c.id));
         const notFoundIds = categoryIds.filter((id) => !foundIds.has(id));
-        return ResultAsync.fromSafePromise<UserPreference[], NotFoundError>(
-          Promise.resolve([]),
-        ).map(() => {
-          throw new NotFoundError(`カテゴリが見つかりません: ${notFoundIds.join(", ")}`);
-        });
+        return err(new NotFoundError(`カテゴリが見つかりません: ${notFoundIds.join(", ")}`));
       }
 
       // 既存の設定を削除して新規作成（トランザクション）
