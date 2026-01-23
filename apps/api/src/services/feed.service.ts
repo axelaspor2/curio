@@ -10,10 +10,6 @@ import { fromPrisma } from "../lib/from-promise.js";
 import type { PrismaError } from "../lib/errors.js";
 import type { FeedArticle } from "../schemas/feed.js";
 
-// Prisma 7 driver adapter使用時の型問題を回避
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = prisma as any;
-
 type FeedResult = {
   articles: FeedArticle[];
   nextCursor: string | null;
@@ -69,7 +65,7 @@ export const feedService = {
 
     // インタラクション済みの記事IDを取得するサブクエリ
     return fromPrisma<ArticleFromDb[]>(
-      db.article.findMany({
+      prisma.article.findMany({
         where: {
           // インタラクション済みの記事を除外
           NOT: {

@@ -75,7 +75,7 @@ export const createTestArticles = async (
         url: `https://example.com/article-${i + 1}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
         imageUrl: `https://example.com/image-${i + 1}.jpg`,
         publishedAt: new Date(Date.now() - i * 3600000), // 1時間ずつ古い
-        articleCategories: categoryIds.length > 0 ? {
+        categories: categoryIds.length > 0 ? {
           create: categoryIds.map((categoryId) => ({
             categoryId,
             confidence: 0.9,
