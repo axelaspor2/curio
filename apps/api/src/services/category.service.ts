@@ -10,17 +10,13 @@ import { fromPrisma } from "../lib/from-promise.js";
 import type { PrismaError } from "../lib/errors.js";
 import type { Category } from "../schemas/categories.js";
 
-// Prisma 7 driver adapter使用時の型問題を回避
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = prisma as any;
-
 export const categoryService = {
   /**
    * カテゴリ一覧を取得
    */
   getAll: (): ResultAsync<Category[], PrismaError> =>
     fromPrisma(
-      db.category.findMany({
+      prisma.category.findMany({
         orderBy: { displayOrder: "asc" },
         select: {
           id: true,
