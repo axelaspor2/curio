@@ -1,7 +1,21 @@
 import type { Context, Next } from "hono";
 
-const DEFINED_ROUTES = ["/api/auth", "/api/health"] as const;
-const PUBLIC_ROUTES = ["/api/auth", "/api/health"] as const;
+const DEFINED_ROUTES = [
+  "/api/auth",
+  "/api/health",
+  "/api/categories",
+  "/api/users",
+  "/api/feed",
+  "/api/interactions",
+  "/api/docs",
+] as const;
+
+const PUBLIC_ROUTES = [
+  "/api/auth",
+  "/api/health",
+  "/api/categories",
+  "/api/docs",
+] as const;
 
 /**
  * 認証ミドルウェア
