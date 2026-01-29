@@ -5,7 +5,6 @@
  */
 
 import { prisma } from "@curio/database";
-import type { Hono } from "hono";
 
 /**
  * テスト用ユーザーとセッションを作成
@@ -13,27 +12,34 @@ import type { Hono } from "hono";
 export const createTestUserWithSession = async () => {
   const user = await prisma.user.create({
     data: {
-      email: `test-${Date.now()}@example.com`,
+      email: `test-${Date.now()}-${Math.random().toString(36).slice(2)}@example.com`,
       name: "Test User",
       emailVerified: true,
     },
   });
 
+  const token = `test-session-token-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const session = await prisma.session.create({
     data: {
       userId: user.id,
-      token: `test-session-token-${Date.now()}`,
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1日後
+      token,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
     },
   });
 
-  return { user, session };
+  return { user, session: { ...session, token } };
 };
+
+/**
+ * Honoアプリケーション型（OpenAPIHono互換）
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AppType = { request: (path: string, init?: RequestInit) => Response | Promise<Response> };
 
 /**
  * 認証済みリクエスト用ヘルパー
  */
-export const authenticatedRequest = (app: Hono, token: string) => {
+export const authenticatedRequest = (app: AppType, token: string) => {
   return {
     get: (path: string) =>
       app.request(path, {
@@ -54,7 +60,7 @@ export const authenticatedRequest = (app: Hono, token: string) => {
 /**
  * 未認証リクエスト用ヘルパー
  */
-export const unauthenticatedRequest = (app: Hono) => {
+export const unauthenticatedRequest = (app: AppType) => {
   return {
     get: (path: string) => app.request(path),
     post: (path: string, body: unknown) =>
