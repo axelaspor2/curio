@@ -153,6 +153,13 @@ tmp*
 npm-debug.log
 yarn-error.log
 
+# TypeScript build artifacts
+dist-node/
+*.tsbuildinfo
+
+# TanStack Router auto-generated
+**/routeTree.gen.ts
+
 # IDEs and editors
 .idea/
 .project
