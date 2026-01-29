@@ -3,6 +3,11 @@ generator client {
   output   = "../src/generated/client"
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "../docs/erd.md"
+}
+
 datasource db {
   provider = "postgresql"
   // URL is configured in prisma.config.ts (Prisma 7+ requirement)
@@ -13,78 +18,109 @@ datasource db {
 
 model User {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  email         String   @unique @db.VarChar(255)
-  name          String   @db.VarChar(255)
-  avatarUrl     String?  @map("avatar_url")
+  email         String   @db.Text
+  name          String   @db.Text
+  avatarUrl     String?  @map("avatar_url") @db.Text
   emailVerified Boolean  @default(false) @map("email_verified")
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
-  sources        Source[]
-  userSources    UserSource[]
-  interactions   Interaction[]
-  interestVector UserInterestVector?
+  interestVector      UserInterestVector?
+  categoryPreferences UserCategoryPreference[]
+  interactions        Interaction[]
 
   // Better Auth
   sessions Session[]
   accounts Account[]
 
+  @@unique([email])
   @@map("users")
 }
 
 model Source {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId    String?  @map("user_id") @db.Uuid
-  type      String   @db.VarChar(50) // 'rss', 'twitter' etc
-  name      String   @db.VarChar(255)
-  url       String
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  type      String   @db.Text // 'rss', 'atom', 'twitter', 'podcast'
+  name      String   @db.Text
+  url       String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  articles    Article[]
-  subscribers UserSource[]
+  articles Article[]
 
   @@map("sources")
 }
 
-model UserSource {
-  userId       String   @map("user_id") @db.Uuid
-  sourceId     String   @map("source_id") @db.Uuid
-  isSubscribed Boolean  @default(true) @map("is_subscribed")
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+model Category {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug         String   @unique @db.Text
+  name         String   @db.Text
+  description  String?  @db.Text
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  source Source @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  articles        ArticleCategory[]
+  userPreferences UserCategoryPreference[]
 
-  @@id([userId, sourceId])
-  @@map("user_sources")
+  @@map("categories")
 }
 
 model Article {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  sourceId    String   @map("source_id") @db.Uuid
-  externalId  String?  @map("external_id") @db.VarChar(255)
-  title       String
-  content     String?
-  summary     String?
-  url         String
-  imageUrl    String?  @map("image_url")
-  categories  Json?
+  id          String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceId    String                      @map("source_id") @db.Uuid
+  externalId  String?                     @map("external_id") @db.Text
+  title       String                      @db.Text
+  content     String?                     @db.Text
+  summary     String?                     @db.Text
+  url         String                      @db.Text
+  imageUrl    String?                     @map("image_url") @db.Text
   embedding   Unsupported("vector(768)")? // Native pgvector support via unsupported type
-  publishedAt DateTime? @map("published_at") @db.Timestamp(6)
-  fetchedAt   DateTime  @default(now()) @map("fetched_at") @db.Timestamp(6)
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  publishedAt DateTime?                   @map("published_at") @db.Timestamptz
+  fetchedAt   DateTime                    @default(now()) @map("fetched_at") @db.Timestamptz
+  createdAt   DateTime                    @default(now()) @map("created_at") @db.Timestamptz
 
-  source       Source        @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  source       Source            @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  categories   ArticleCategory[]
   interactions Interaction[]
 
   @@unique([sourceId, externalId])
   @@map("articles")
 }
 
-// Enum for interaction types (improves code readability)
-// 0:SKIP, 1:LIKE, 2:OPEN, 3:READ
+model ArticleCategory {
+  articleId  String   @map("article_id") @db.Uuid
+  categoryId String   @map("category_id") @db.Uuid
+  confidence Decimal? @db.Decimal(3, 2) // LLM classification confidence (0.00-1.00)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  article  Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([articleId, categoryId])
+  @@index([categoryId])
+  @@map("article_categories")
+}
+
+model UserCategoryPreference {
+  userId             String   @map("user_id") @db.Uuid
+  categoryId         String   @map("category_id") @db.Uuid
+  preferenceScore    Decimal  @default(0.5) @map("preference_score") @db.Decimal(5, 4) // 0.0000-1.0000
+  isInitialSelection Boolean  @default(false) @map("is_initial_selection")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([userId, categoryId])
+  @@index([categoryId])
+  @@index([userId, preferenceScore(sort: Desc)])
+  @@map("user_category_preferences")
+}
+
+// Enum for interaction types
+// SKIP: left swipe (weak negative signal)
+// LIKE: right swipe (strong positive signal)
+// OPEN: tapped to open article (medium positive signal)
+// READ: read for certain time (strong positive signal)
 enum InteractionType {
   SKIP
   LIKE
@@ -98,23 +134,25 @@ model Interaction {
   articleId      String          @map("article_id") @db.Uuid
   type           InteractionType
   readingTimeSec Int?            @map("reading_time_sec")
-  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamp(6)
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([articleId])
+  @@index([userId, type])
+  @@index([createdAt(sort: Desc)])
   @@map("interactions")
 }
 
 model UserInterestVector {
-  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId            String    @unique @map("user_id") @db.Uuid
+  id                String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String                      @unique @map("user_id") @db.Uuid
   interestEmbedding Unsupported("vector(768)")? @map("interest_embedding")
-  lastCalculatedAt  DateTime? @map("last_calculated_at") @db.Timestamp(6)
-  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  lastCalculatedAt  DateTime?                   @map("last_calculated_at") @db.Timestamptz
+  createdAt         DateTime                    @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime                    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -128,12 +166,12 @@ model UserInterestVector {
 model Session {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId    String   @map("user_id") @db.Uuid
-  token     String   @unique @db.VarChar(255)
-  expiresAt DateTime @map("expires_at") @db.Timestamp(6)
-  ipAddress String?  @map("ip_address") @db.VarChar(45)
-  userAgent String?  @map("user_agent")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  token     String   @unique @db.Text
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  ipAddress String?  @map("ip_address") @db.Text
+  userAgent String?  @map("user_agent") @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -144,17 +182,17 @@ model Session {
 model Account {
   id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId                String    @map("user_id") @db.Uuid
-  accountId             String    @map("account_id") @db.VarChar(255)
-  providerId            String    @map("provider_id") @db.VarChar(50)
-  accessToken           String?   @map("access_token")
-  refreshToken          String?   @map("refresh_token")
-  idToken               String?   @map("id_token")
-  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamp(6)
-  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamp(6)
-  scope                 String?
-  password              String?
-  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  accountId             String    @map("account_id") @db.Text
+  providerId            String    @map("provider_id") @db.Text
+  accessToken           String?   @map("access_token") @db.Text
+  refreshToken          String?   @map("refresh_token") @db.Text
+  idToken               String?   @map("id_token") @db.Text
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz
+  scope                 String?   @db.Text
+  password              String?   @db.Text
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -164,11 +202,11 @@ model Account {
 
 model Verification {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  identifier String   @db.VarChar(255)
-  value      String
-  expiresAt  DateTime @map("expires_at") @db.Timestamp(6)
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  identifier String   @db.Text
+  value      String   @db.Text
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
 
   @@index([identifier])
   @@map("verifications")
