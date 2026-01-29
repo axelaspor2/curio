@@ -182,10 +182,13 @@ dist-node/
 /.angular/cache
 .sass-cache/
 /connect.lock
-/coverage
+**/coverage/
 /libpeerconnection.log
 testem.log
 /typings
+
+# Claude Code skills (local only)
+.claude/skills/
 
 # System files
 .DS_Store

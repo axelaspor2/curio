@@ -7,6 +7,7 @@ import { authMiddleware } from "./middlewares/auth.js";
 import { sessionMiddleware } from "./middlewares/session.js";
 import { authRouter } from "./routes/auth.js";
 import { categoriesRouter } from "./routes/categories.js";
+import { feedRouter } from "./routes/feed.js";
 import { healthRouter } from "./routes/health.js";
 import { interactionsRouter } from "./routes/interactions.js";
 import { usersRouter } from "./routes/users.js";
@@ -33,6 +34,7 @@ const app = baseApp
   )
   .route("/api/auth", authRouter)
   .route("/api/categories", categoriesRouter)
+  .route("/api/feed", feedRouter)
   .route("/api/health", healthRouter)
   .route("/api/interactions", interactionsRouter)
   .route("/api/users", usersRouter);

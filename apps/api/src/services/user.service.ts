@@ -5,7 +5,7 @@
  */
 
 import { prisma } from "@curio/database";
-import { ResultAsync, err } from "neverthrow";
+import { ResultAsync, errAsync } from "neverthrow";
 import { fromPrisma } from "../lib/from-promise.js";
 import { NotFoundError, type PrismaError } from "../lib/errors.js";
 import type { UserPreference } from "../schemas/users.js";
@@ -32,7 +32,7 @@ export const userService = {
       if (categories.length !== categoryIds.length) {
         const foundIds = new Set(categories.map((c) => c.id));
         const notFoundIds = categoryIds.filter((id) => !foundIds.has(id));
-        return err(new NotFoundError(`カテゴリが見つかりません: ${notFoundIds.join(", ")}`));
+        return errAsync(new NotFoundError(`カテゴリが見つかりません: ${notFoundIds.join(", ")}`));
       }
 
       // 既存の設定を削除して新規作成（トランザクション）

@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import app from "../../app.js";
+import app from "../test-app.js";
 import { createTestCategories } from "../fixtures.js";
 import type { CategoriesResponse } from "../../schemas/categories.js";
 
