@@ -1,5 +1,7 @@
-import { Hono } from "hono";
+import { OpenAPIHono } from "@hono/zod-openapi";
+import { swaggerUI } from "@hono/swagger-ui";
 import { cors } from "hono/cors";
+import type { Context } from "hono";
 import { logger } from "./lib/logger.js";
 import { authMiddleware } from "./middlewares/auth.js";
 import { sessionMiddleware } from "./middlewares/session.js";
@@ -11,7 +13,9 @@ const corsOrigins = process.env.CORS_ORIGINS?.split(",") ?? [
   "http://localhost:5173",
 ];
 
-const app = new Hono()
+const baseApp = new OpenAPIHono();
+
+const app = baseApp
   .use(sessionMiddleware)
   .use(authMiddleware)
   .use(
@@ -25,13 +29,29 @@ const app = new Hono()
     }),
   )
   .route("/api/auth", authRouter)
-  .route("/api/health", healthRouter)
-  .notFound((c) => {
-    return c.json({ error: "Not Found" }, 404);
-  })
-  .onError((err, c) => {
-    logger.error({ err, path: c.req.path, method: c.req.method }, "Unhandled error");
-    return c.json({ error: "Internal Server Error" }, 500);
-  });
+  .route("/api/health", healthRouter);
+
+// OpenAPI JSON
+baseApp.doc("/api/docs/openapi.json", {
+  openapi: "3.1.0",
+  info: {
+    title: "Curio API",
+    version: "1.0.0",
+    description: "Curio - パーソナライズ情報キュレーションアプリのAPI",
+  },
+});
+
+// Swagger UI
+baseApp.get("/api/docs", swaggerUI({ url: "/api/docs/openapi.json" }));
+
+// Error handlers
+baseApp.notFound((c: Context) => {
+  return c.json({ error: "Not Found" }, 404);
+});
+
+baseApp.onError((err: Error, c: Context) => {
+  logger.error({ err, path: c.req.path, method: c.req.method }, "Unhandled error");
+  return c.json({ error: "Internal Server Error" }, 500);
+});
 
 export default app;
