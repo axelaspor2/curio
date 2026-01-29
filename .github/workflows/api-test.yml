@@ -57,8 +57,8 @@ jobs:
             sleep 1
           done
 
-      - name: Generate Prisma Client
-        run: pnpm --filter @curio/database generate
+      - name: Build database package
+        run: pnpm --filter @curio/database db:generate && pnpm --filter @curio/database build
         working-directory: apps
 
       - name: Run database migrations
