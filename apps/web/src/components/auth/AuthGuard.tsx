@@ -28,6 +28,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     );
   }
 
+  // リダイレクト処理中はnullを返す（childrenのフラッシュを防ぐ）
   if (!isAuthenticated) {
     return null;
   }

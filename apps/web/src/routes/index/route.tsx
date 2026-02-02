@@ -12,6 +12,7 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
+  // 1セッションで消費しやすい量として20件を取得（多すぎると疲労、少なすぎると物足りない）
   const { articles, isLoading, isError, error } = useFeedArticles({ limit: 20 });
   const { recordInteraction } = useInteraction();
 

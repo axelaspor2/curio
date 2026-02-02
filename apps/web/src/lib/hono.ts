@@ -14,6 +14,7 @@ const API_BASE_URL = getApiBaseUrl();
 
 export const honoClient = hc<AppType>(API_BASE_URL, {
   init: {
+    // Better Authのセッション管理にCookieを使用するため、認証情報を含める
     credentials: "include",
   },
 });

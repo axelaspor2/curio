@@ -17,15 +17,19 @@ const baseApp = new OpenAPIHono();
 
 const app = baseApp
   .use(
+    // CORSは認証より先に処理する必要がある（プリフライトリクエスト対応）
     cors({
       origin: corsOrigins,
       allowHeaders: ["Content-Type", "Authorization"],
       allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       exposeHeaders: ["Content-Length"],
+      // プリフライトのキャッシュを24時間に設定してリクエスト数を削減
       maxAge: 86400,
+      // Better Authのセッション管理にCookieを使用するため必須
       credentials: true,
     }),
   )
+  // ミドルウェアの順序: session → auth（セッション情報を認証判定に使用）
   .use(sessionMiddleware)
   .use(authMiddleware)
   .route("/api/auth", authRouter)

@@ -7,8 +7,11 @@ import { ActionButtons } from "./ActionButtons";
 import { ArticleCard } from "./ArticleCard";
 import { SwipeIndicator } from "./SwipeIndicator";
 
+// スワイプ判定の閾値（px）- モバイルでの誤操作を防ぎつつ、意図的なスワイプを検出
 const SWIPE_THRESHOLD = 100;
+// カードの最大回転角度（deg）- Tinderライクな自然な傾きを表現
 const ROTATION_FACTOR = 12;
+// スワイプ完了時のカード移動距離（px）- 画面外に確実に移動させる
 const EXIT_DISTANCE = 500;
 
 export interface SwipeableCardStackProps {
@@ -19,7 +22,9 @@ export interface SwipeableCardStackProps {
 
 export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCardStackProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  // Undo機能のためにスワイプ履歴を保持
   const [history, setHistory] = useState<{ article: Article; type: InteractionType }[]>([]);
+  // ドラッグ終了時刻を記録（タップとドラッグを区別するため）
   const dragEndTimeRef = useRef(0);
 
   const x = useMotionValue(0);
@@ -84,6 +89,8 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
   );
 
   const handleTap = useCallback(() => {
+    // ドラッグ操作直後の誤タップを防ぐため、100ms以内のタップは無視
+    // framer-motionのonTapはドラッグ終了直後にも発火するため必要
     const timeSinceDragEnd = Date.now() - dragEndTimeRef.current;
     if (timeSinceDragEnd > 100 && currentArticle) {
       onCardTap?.(currentArticle);
@@ -153,6 +160,7 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
         )}
 
         {/* Current card (draggable) */}
+        {/* dragElastic: 0.7でゴムのような抵抗感を表現し、スワイプの意図を明確にする */}
         {currentArticle && (
           <motion.div
             className={cn(

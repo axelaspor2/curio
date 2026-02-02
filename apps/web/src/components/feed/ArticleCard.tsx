@@ -22,6 +22,7 @@ function formatRelativeTime(dateString: string | null): string {
   return date.toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
 }
 
+// forwardRef: SwipeableCardStackのmotion.divからDOM参照を受け取るため
 export const ArticleCard = forwardRef<HTMLDivElement, ArticleCardProps>(
   ({ article, className, ...props }, ref) => {
     const primaryCategory = article.categories[0];
