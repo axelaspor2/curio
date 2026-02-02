@@ -82,7 +82,6 @@ export function useAuth() {
           return { success: false, error: result.error.message ?? "ログインに失敗しました" };
         }
 
-        // セッション情報を再取得してユーザー情報をstateに反映
         await checkSession();
         navigate({ to: "/" });
         return { success: true, error: null };

@@ -1,9 +1,3 @@
-/**
- * ユーザーサービス
- *
- * ユーザー関連のビジネスロジックを提供します。
- */
-
 import { prisma } from "@curio/database";
 import { errAsync, type ResultAsync } from "neverthrow";
 import { NotFoundError, type PrismaError } from "../lib/errors.js";
@@ -14,43 +8,39 @@ type CategoryIds = { id: string }[];
 
 export const userService = {
   /**
-   * 初回カテゴリ選択
-   * 選択したカテゴリに対してUserCategoryPreferenceを作成
+   * 初期状態でユーザーのカテゴリ選好を設定
+   * トランザクション化で既存設定の一貫性を確保し、部分的な更新を防止
    */
   setCategories: (
     userId: string,
     categoryIds: string[],
   ): ResultAsync<UserPreference[], PrismaError | NotFoundError> =>
-    // まずカテゴリの存在確認
     fromPrisma<CategoryIds>(
       prisma.category.findMany({
         where: { id: { in: categoryIds } },
         select: { id: true },
       }),
     ).andThen((categories) => {
-      // 存在しないカテゴリがあればエラー
       if (categories.length !== categoryIds.length) {
         const foundIds = new Set(categories.map((c) => c.id));
         const notFoundIds = categoryIds.filter((id) => !foundIds.has(id));
         return errAsync(new NotFoundError(`カテゴリが見つかりません: ${notFoundIds.join(", ")}`));
       }
 
-      // 既存の設定を削除して新規作成（トランザクション）
       return fromPrisma<UserPreference[]>(
         prisma.$transaction(async (tx) => {
-          // 既存のカテゴリ設定を削除
           await tx.userCategoryPreference.deleteMany({
             where: { userId },
           });
 
-          // 新しいカテゴリ設定を作成
           const preferences = await Promise.all(
             categoryIds.map((categoryId) =>
               tx.userCategoryPreference.create({
                 data: {
                   userId,
                   categoryId,
-                  preferenceScore: 0.5, // 初期スコア
+                  // 中立的な初期値（0-1スケール）
+                  preferenceScore: 0.5,
                   isInitialSelection: true,
                 },
                 select: {
@@ -62,7 +52,7 @@ export const userService = {
             ),
           );
 
-          // PrismaのDecimal型をnumberに変換
+          // PrismaのDecimal型はJSON直列化できないためnumberに変換
           return preferences.map((p) => ({
             categoryId: p.categoryId,
             preferenceScore: Number(p.preferenceScore),

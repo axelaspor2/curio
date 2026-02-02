@@ -28,14 +28,11 @@ export function Header({ className }: HeaderProps) {
         className,
       )}
     >
-      {/* Logo */}
       <h1 className="text-xl font-semibold tracking-tight">
         <span className="font-display">Curio</span>
       </h1>
 
-      {/* Actions */}
       <div className="flex items-center gap-2">
-        {/* Theme toggle */}
         <button
           type="button"
           onClick={toggleTheme}
@@ -51,7 +48,6 @@ export function Header({ className }: HeaderProps) {
           <FluentEmoji name={theme === "dark" ? "sun" : "crescent-moon"} size={20} />
         </button>
 
-        {/* Logout button */}
         <button
           type="button"
           onClick={signOut}
