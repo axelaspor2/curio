@@ -35,33 +35,43 @@
 }
 
 .dark {
-  /* Dark theme colors */
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
+  /* Editorial Dark Theme - Refined & Sophisticated */
+  --background: oklch(0.12 0 0);
+  --foreground: oklch(0.95 0 0);
+  --card: oklch(0.16 0.008 280);
+  --card-foreground: oklch(0.92 0 0);
+  --popover: oklch(0.14 0.005 280);
+  --popover-foreground: oklch(0.95 0 0);
+  --primary: oklch(0.95 0 0);
+  --primary-foreground: oklch(0.12 0 0);
+  --secondary: oklch(0.22 0.005 280);
+  --secondary-foreground: oklch(0.92 0 0);
+  --muted: oklch(0.25 0.005 280);
+  --muted-foreground: oklch(0.65 0 0);
+  --accent: oklch(0.22 0.008 280);
+  --accent-foreground: oklch(0.95 0 0);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.95 0 0);
+  --border: oklch(0.25 0.008 280);
+  --input: oklch(0.22 0.005 280);
+  --ring: oklch(0.5 0 0);
+
+  /* Swipe action colors */
+  --swipe-like: oklch(0.7 0.18 145);
+  --swipe-skip: oklch(0.65 0.15 25);
+
+  /* Category colors */
+  --category-tech: oklch(0.65 0.15 250);
+  --category-business: oklch(0.68 0.14 55);
+  --category-science: oklch(0.65 0.16 280);
+  --category-health: oklch(0.68 0.16 145);
 
   /* Dark chart colors */
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --chart-1: oklch(0.65 0.15 250);
+  --chart-2: oklch(0.68 0.14 145);
+  --chart-3: oklch(0.68 0.14 55);
+  --chart-4: oklch(0.65 0.16 280);
+  --chart-5: oklch(0.65 0.15 25);
 }
 
 @theme inline {
@@ -89,6 +99,12 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-swipe-like: var(--swipe-like);
+  --color-swipe-skip: var(--swipe-skip);
+  --color-category-tech: var(--category-tech);
+  --color-category-business: var(--category-business);
+  --color-category-science: var(--category-science);
+  --color-category-health: var(--category-health);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -100,6 +116,139 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: "Zen Kaku Gothic New", "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
   }
+}
+
+/* Typography */
+.font-display {
+  font-family: "Outfit", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.font-mono-accent {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+
+/* Card animations */
+@keyframes card-enter {
+  from {
+    transform: scale(0.95) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes card-exit-right {
+  to {
+    transform: translateX(150%) rotate(20deg);
+    opacity: 0;
+  }
+}
+
+@keyframes card-exit-left {
+  to {
+    transform: translateX(-150%) rotate(-20deg);
+    opacity: 0;
+  }
+}
+
+.animate-card-enter {
+  animation: card-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Swipe indicator pulse */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+/* Touch feedback */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* Safe area for mobile */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Emoji animations */
+@keyframes emoji-bounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.1);
+  }
+}
+
+@keyframes emoji-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes emoji-wiggle {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-10deg);
+  }
+  75% {
+    transform: rotate(10deg);
+  }
+}
+
+.animate-emoji-bounce {
+  animation: emoji-bounce 1s ease-in-out infinite;
+}
+
+.animate-emoji-pop {
+  animation: emoji-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-emoji-wiggle {
+  animation: emoji-wiggle 0.5s ease-in-out;
+}
+
+/* Hover effect for emoji buttons */
+.emoji-btn {
+  transition: transform 0.2s ease;
+}
+
+.emoji-btn:hover {
+  transform: scale(1.15);
+}
+
+.emoji-btn:active {
+  transform: scale(0.95);
 }

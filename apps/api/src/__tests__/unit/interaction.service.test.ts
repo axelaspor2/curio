@@ -2,9 +2,9 @@
  * インタラクションサービスのユニットテスト
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { interactionService } from "../../services/interaction.service.js";
-import { createTestSource, createTestArticles } from "../fixtures.js";
+import { createTestArticles, createTestSource } from "../fixtures.js";
 import { createTestUserWithSession } from "../helpers.js";
 
 describe("interactionService", () => {

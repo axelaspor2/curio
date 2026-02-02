@@ -2,10 +2,10 @@
  * カテゴリAPIのインテグレーションテスト
  */
 
-import { describe, it, expect } from "vitest";
-import app from "../test-app.js";
-import { createTestCategories } from "../fixtures.js";
+import { describe, expect, it } from "vitest";
 import type { CategoriesResponse } from "../../schemas/categories.js";
+import { createTestCategories } from "../fixtures.js";
+import app from "../test-app.js";
 
 describe("GET /api/categories", () => {
   it("カテゴリ一覧を取得できる", async () => {

@@ -5,7 +5,7 @@
  */
 
 import { prisma } from "@curio/database";
-import { beforeAll, afterAll, beforeEach, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, vi } from "vitest";
 
 // Better Auth のセッション検証をモック
 // テストでは直接DBからセッションを検索する
@@ -24,7 +24,7 @@ vi.mock("../lib/auth.js", () => ({
         return { user, session };
       },
     },
-    handler: async (request: Request) => new Response(null, { status: 404 }),
+    handler: async (_request: Request) => new Response(null, { status: 404 }),
   },
 }));
 

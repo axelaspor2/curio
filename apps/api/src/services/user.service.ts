@@ -5,9 +5,9 @@
  */
 
 import { prisma } from "@curio/database";
-import { ResultAsync, errAsync } from "neverthrow";
-import { fromPrisma } from "../lib/from-promise.js";
+import { errAsync, type ResultAsync } from "neverthrow";
 import { NotFoundError, type PrismaError } from "../lib/errors.js";
+import { fromPrisma } from "../lib/from-promise.js";
 import type { UserPreference } from "../schemas/users.js";
 
 type CategoryIds = { id: string }[];
@@ -37,7 +37,7 @@ export const userService = {
 
       // 既存の設定を削除して新規作成（トランザクション）
       return fromPrisma<UserPreference[]>(
-        prisma.$transaction(async (tx: typeof prisma) => {
+        prisma.$transaction(async (tx) => {
           // 既存のカテゴリ設定を削除
           await tx.userCategoryPreference.deleteMany({
             where: { userId },
@@ -45,7 +45,7 @@ export const userService = {
 
           // 新しいカテゴリ設定を作成
           const preferences = await Promise.all(
-            categoryIds.map((categoryId: string) =>
+            categoryIds.map((categoryId) =>
               tx.userCategoryPreference.create({
                 data: {
                   userId,
@@ -62,13 +62,12 @@ export const userService = {
             ),
           );
 
-          return preferences.map(
-            (p: { categoryId: string; preferenceScore: number; isInitialSelection: boolean }) => ({
-              categoryId: p.categoryId,
-              preferenceScore: Number(p.preferenceScore), // Decimalをnumberに変換
-              isInitialSelection: p.isInitialSelection,
-            }),
-          );
+          // PrismaのDecimal型をnumberに変換
+          return preferences.map((p) => ({
+            categoryId: p.categoryId,
+            preferenceScore: Number(p.preferenceScore),
+            isInitialSelection: p.isInitialSelection,
+          }));
         }),
       );
     }),

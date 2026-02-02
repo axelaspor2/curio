@@ -6,8 +6,8 @@
 
 import { prisma } from "@curio/database";
 import type { ResultAsync } from "neverthrow";
-import { fromPrisma } from "../lib/from-promise.js";
 import type { PrismaError } from "../lib/errors.js";
+import { fromPrisma } from "../lib/from-promise.js";
 import type { Category } from "../schemas/categories.js";
 
 export const categoryService = {

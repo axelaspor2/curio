@@ -9,19 +9,13 @@ import { z } from "@hono/zod-openapi";
  */
 export const FeedQuerySchema = z
   .object({
-    limit: z.coerce
-      .number()
-      .int()
-      .min(1)
-      .max(50)
-      .default(20)
-      .openapi({
-        description: "取得件数（デフォルト20、最大50）",
-      }),
+    limit: z.coerce.number().int().min(1).max(50).default(20).openapi({
+      description: "取得件数（デフォルト20、最大50）",
+    }),
     cursor: z.string().optional().openapi({
       description: "ページネーションカーソル",
     }),
-    categoryId: z.string().uuid().optional().openapi({
+    categoryId: z.uuid().optional().openapi({
       description: "カテゴリフィルタ",
     }),
   })
@@ -32,19 +26,19 @@ export const FeedQuerySchema = z
  */
 export const FeedArticleSchema = z
   .object({
-    id: z.string().uuid(),
+    id: z.uuid(),
     title: z.string(),
     summary: z.string().nullable(),
     url: z.string().url(),
     imageUrl: z.string().url().nullable(),
     publishedAt: z.string().datetime().nullable(),
     source: z.object({
-      id: z.string().uuid(),
+      id: z.uuid(),
       name: z.string(),
     }),
     categories: z.array(
       z.object({
-        id: z.string().uuid(),
+        id: z.uuid(),
         slug: z.string(),
         name: z.string(),
       }),

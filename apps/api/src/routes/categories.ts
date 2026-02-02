@@ -2,10 +2,11 @@
  * カテゴリAPIルート
  */
 
-import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
-import { categoryService } from "../services/category.service.js";
+import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { CategoriesResponseSchema } from "../schemas/categories.js";
 import { ErrorResponseSchema } from "../schemas/common.js";
+import { categoryService } from "../services/category.service.js";
+import type { AppEnv } from "../types/hono.js";
 
 const getCategoriesRoute = createRoute({
   method: "get",
@@ -25,7 +26,7 @@ const getCategoriesRoute = createRoute({
   },
 });
 
-export const categoriesRouter = new OpenAPIHono().openapi(getCategoriesRoute, async (c) => {
+export const categoriesRouter = new OpenAPIHono<AppEnv>().openapi(getCategoriesRoute, async (c) => {
   const result = await categoryService.getAll();
 
   return result.match(

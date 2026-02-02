@@ -2,11 +2,12 @@
  * ユーザーAPIルート
  */
 
-import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
-import { userService } from "../services/user.service.js";
-import { SetCategoriesRequestSchema, SetCategoriesResponseSchema } from "../schemas/users.js";
-import { ErrorResponseSchema } from "../schemas/common.js";
+import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { NotFoundError } from "../lib/errors.js";
+import { ErrorResponseSchema } from "../schemas/common.js";
+import { SetCategoriesRequestSchema, SetCategoriesResponseSchema } from "../schemas/users.js";
+import { userService } from "../services/user.service.js";
+import type { AppEnv } from "../types/hono.js";
 
 const setCategoriesRoute = createRoute({
   method: "post",
@@ -44,10 +45,8 @@ const setCategoriesRoute = createRoute({
   },
 });
 
-export const usersRouter = new OpenAPIHono().openapi(setCategoriesRoute, async (c) => {
-  // セッションからユーザーIDを取得（authMiddlewareで認証済み）
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const user = (c as any).get("user") as { id: string } | null;
+export const usersRouter = new OpenAPIHono<AppEnv>().openapi(setCategoriesRoute, async (c) => {
+  const user = c.get("user");
   if (!user) {
     return c.json({ error: "Unauthorized" }, 401);
   }

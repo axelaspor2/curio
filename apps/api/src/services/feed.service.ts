@@ -6,8 +6,8 @@
 
 import { prisma } from "@curio/database";
 import type { ResultAsync } from "neverthrow";
-import { fromPrisma } from "../lib/from-promise.js";
 import type { PrismaError } from "../lib/errors.js";
+import { fromPrisma } from "../lib/from-promise.js";
 import type { FeedArticle } from "../schemas/feed.js";
 
 type FeedResult = {
@@ -58,9 +58,13 @@ export const feedService = {
     let cursorId: string | null = null;
     if (cursor) {
       const decoded = Buffer.from(cursor, "base64").toString("utf-8");
-      const [publishedAtStr, id] = decoded.split("_");
-      cursorPublishedAt = publishedAtStr === "null" ? null : new Date(publishedAtStr);
-      cursorId = id;
+      const cursorParts = decoded.split("_");
+      const publishedAtStr = cursorParts[0];
+      const id = cursorParts[1];
+      if (publishedAtStr !== undefined && id !== undefined) {
+        cursorPublishedAt = publishedAtStr === "null" ? null : new Date(publishedAtStr);
+        cursorId = id;
+      }
     }
 
     // インタラクション済みの記事IDを取得するサブクエリ
@@ -90,9 +94,7 @@ export const feedService = {
             ? {
                 OR: [
                   // publishedAtがカーソルより古い場合
-                  ...(cursorPublishedAt
-                    ? [{ publishedAt: { lt: cursorPublishedAt } }]
-                    : []),
+                  ...(cursorPublishedAt ? [{ publishedAt: { lt: cursorPublishedAt } }] : []),
                   // publishedAtが同じ場合はIDで比較
                   {
                     publishedAt: cursorPublishedAt,

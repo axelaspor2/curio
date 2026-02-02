@@ -1,7 +1,8 @@
-import { OpenAPIHono } from "@hono/zod-openapi";
 import { swaggerUI } from "@hono/swagger-ui";
-import { cors } from "hono/cors";
+import { OpenAPIHono } from "@hono/zod-openapi";
 import type { Context } from "hono";
+import { cors } from "hono/cors";
+import { corsOrigins } from "./lib/config.js";
 import { logger } from "./lib/logger.js";
 import { authMiddleware } from "./middlewares/auth.js";
 import { sessionMiddleware } from "./middlewares/session.js";
@@ -12,26 +13,25 @@ import { healthRouter } from "./routes/health.js";
 import { interactionsRouter } from "./routes/interactions.js";
 import { usersRouter } from "./routes/users.js";
 
-const corsOrigins = process.env.CORS_ORIGINS?.split(",") ?? [
-  "http://localhost:3000",
-  "http://localhost:5173",
-];
-
 const baseApp = new OpenAPIHono();
 
 const app = baseApp
-  .use(sessionMiddleware)
-  .use(authMiddleware)
   .use(
+    // CORSは認証より先に処理する必要がある（プリフライトリクエスト対応）
     cors({
       origin: corsOrigins,
       allowHeaders: ["Content-Type", "Authorization"],
       allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
       exposeHeaders: ["Content-Length"],
+      // プリフライトのキャッシュを24時間に設定してリクエスト数を削減
       maxAge: 86400,
+      // Better Authのセッション管理にCookieを使用するため必須
       credentials: true,
     }),
   )
+  // ミドルウェアの順序: session → auth（セッション情報を認証判定に使用）
+  .use(sessionMiddleware)
+  .use(authMiddleware)
   .route("/api/auth", authRouter)
   .route("/api/categories", categoriesRouter)
   .route("/api/feed", feedRouter)
