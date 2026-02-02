@@ -1,6 +1,7 @@
 import { prisma } from "@curio/database";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { corsOrigins } from "./config.js";
 
 /**
  * Better Auth の設定
@@ -9,6 +10,7 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  trustedOrigins: corsOrigins,
   emailAndPassword: {
     enabled: true,
   },
@@ -26,5 +28,10 @@ export const auth = betterAuth({
   },
   verification: {
     modelName: "verification",
+  },
+  advanced: {
+    database: {
+      generateId: "uuid",
+    },
   },
 });
