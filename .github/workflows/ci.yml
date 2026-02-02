@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/**"
+  pull_request:
+    paths:
+      - "apps/**"
+
+jobs:
+  lint-format:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+          cache-dependency-path: apps/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: apps
+
+      - name: Run lint
+        run: pnpm lint
+        working-directory: apps
+
+      - name: Check format
+        run: npx biome format .
+        working-directory: apps
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+          cache-dependency-path: apps/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: apps
+
+      - name: Build database package
+        run: pnpm --filter @curio/database build
+        working-directory: apps
+
+      - name: Build API
+        run: pnpm --filter @curio/api build
+        working-directory: apps
+
+      - name: Build Web
+        run: pnpm --filter @curio/web build
+        working-directory: apps
