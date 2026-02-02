@@ -2,11 +2,20 @@
  * フィードAPIのインテグレーションテスト
  */
 
-import { describe, it, expect } from "vitest";
-import app from "../test-app.js";
-import { createTestSource, createTestArticles, createTestCategories, createTestInteraction } from "../fixtures.js";
-import { createTestUserWithSession, authenticatedRequest, unauthenticatedRequest } from "../helpers.js";
+import { describe, expect, it } from "vitest";
 import type { FeedResponse } from "../../schemas/feed.js";
+import {
+  createTestArticles,
+  createTestCategories,
+  createTestInteraction,
+  createTestSource,
+} from "../fixtures.js";
+import {
+  authenticatedRequest,
+  createTestUserWithSession,
+  unauthenticatedRequest,
+} from "../helpers.js";
+import app from "../test-app.js";
 
 describe("GET /api/feed", () => {
   it("フィードが正しく取得できる", async () => {

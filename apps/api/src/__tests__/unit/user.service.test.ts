@@ -2,7 +2,7 @@
  * ユーザーサービスのユニットテスト
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { userService } from "../../services/user.service.js";
 import { createTestCategories } from "../fixtures.js";
 import { createTestUserWithSession } from "../helpers.js";

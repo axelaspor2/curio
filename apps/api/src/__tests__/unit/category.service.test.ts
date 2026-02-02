@@ -2,7 +2,7 @@
  * カテゴリサービスのユニットテスト
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { categoryService } from "../../services/category.service.js";
 import { createTestCategories } from "../fixtures.js";
 

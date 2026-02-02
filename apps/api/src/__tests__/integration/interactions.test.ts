@@ -2,11 +2,15 @@
  * インタラクションAPIのインテグレーションテスト
  */
 
-import { describe, it, expect } from "vitest";
-import app from "../test-app.js";
-import { createTestSource, createTestArticles } from "../fixtures.js";
-import { createTestUserWithSession, authenticatedRequest, unauthenticatedRequest } from "../helpers.js";
+import { describe, expect, it } from "vitest";
 import type { InteractionResponse } from "../../schemas/interactions.js";
+import { createTestArticles, createTestSource } from "../fixtures.js";
+import {
+  authenticatedRequest,
+  createTestUserWithSession,
+  unauthenticatedRequest,
+} from "../helpers.js";
+import app from "../test-app.js";
 
 describe("POST /api/interactions", () => {
   it("LIKEインタラクションが正しく登録される", async () => {

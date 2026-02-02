@@ -2,9 +2,14 @@
  * フィードサービスのユニットテスト
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { feedService } from "../../services/feed.service.js";
-import { createTestSource, createTestArticles, createTestCategories, createTestInteraction } from "../fixtures.js";
+import {
+  createTestArticles,
+  createTestCategories,
+  createTestInteraction,
+  createTestSource,
+} from "../fixtures.js";
 import { createTestUserWithSession } from "../helpers.js";
 
 describe("feedService", () => {
