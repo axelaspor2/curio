@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Article, FeedResponse } from "@/types/feed";
-import { getApiBaseUrl } from "@/lib/hono";
+import { honoClient } from "@/lib/hono";
 
 interface UseFeedOptions {
   limit?: number;
@@ -10,12 +10,11 @@ interface UseFeedOptions {
 async function fetchFeed(options: UseFeedOptions = {}): Promise<FeedResponse> {
   const { limit = 20, categoryId } = options;
 
-  const params = new URLSearchParams();
-  params.set("limit", limit.toString());
-  if (categoryId) params.set("categoryId", categoryId);
-
-  const response = await fetch(`${getApiBaseUrl()}/api/feed?${params.toString()}`, {
-    credentials: "include",
+  const response = await honoClient.api.feed.$get({
+    query: {
+      limit: limit.toString(),
+      categoryId,
+    },
   });
 
   if (!response.ok) {

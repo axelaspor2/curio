@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import type { InteractionType } from "@/types/feed";
-import { getApiBaseUrl } from "@/lib/hono";
+import { honoClient } from "@/lib/hono";
 
 interface CreateInteractionParams {
   articleId: string;
@@ -9,13 +9,8 @@ interface CreateInteractionParams {
 }
 
 async function createInteraction(params: CreateInteractionParams): Promise<void> {
-  const response = await fetch(`${getApiBaseUrl()}/api/interactions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify(params),
+  const response = await honoClient.api.interactions.$post({
+    json: params,
   });
 
   if (!response.ok) {
