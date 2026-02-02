@@ -1,7 +1,16 @@
 import type { AppType } from "@curio/api";
 import { hc } from "hono/client";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+export function getApiBaseUrl(): string {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  // Use the same hostname as the current page for LAN access
+  const hostname = typeof window !== "undefined" ? window.location.hostname : "localhost";
+  return `http://${hostname}:3001`;
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 export const honoClient = hc<AppType>(API_BASE_URL, {
   init: {

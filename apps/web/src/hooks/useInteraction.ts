@@ -1,7 +1,6 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import type { InteractionType } from "@/types/feed";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+import { getApiBaseUrl } from "@/lib/hono";
 
 interface CreateInteractionParams {
   articleId: string;
@@ -10,7 +9,7 @@ interface CreateInteractionParams {
 }
 
 async function createInteraction(params: CreateInteractionParams): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/api/interactions`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/interactions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -26,13 +25,10 @@ async function createInteraction(params: CreateInteractionParams): Promise<void>
 }
 
 export function useInteraction() {
-  const queryClient = useQueryClient();
-
   const mutation = useMutation({
     mutationFn: createInteraction,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["feed"] });
-    },
+    // Note: フィードの再取得はスワイプ中には行わない
+    // 全記事を見終わった後やページ遷移時に自動的に再取得される
   });
 
   const recordInteraction = (articleId: string, type: InteractionType, readingTimeSec?: number) => {

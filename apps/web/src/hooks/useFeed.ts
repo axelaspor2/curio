@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Article, FeedResponse } from "@/types/feed";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+import { getApiBaseUrl } from "@/lib/hono";
 
 interface UseFeedOptions {
   limit?: number;
@@ -15,7 +14,7 @@ async function fetchFeed(options: UseFeedOptions = {}): Promise<FeedResponse> {
   params.set("limit", limit.toString());
   if (categoryId) params.set("categoryId", categoryId);
 
-  const response = await fetch(`${API_BASE_URL}/api/feed?${params.toString()}`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/feed?${params.toString()}`, {
     credentials: "include",
   });
 
