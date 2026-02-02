@@ -5,9 +5,9 @@
  */
 
 import { prisma } from "@curio/database";
-import { ResultAsync, errAsync } from "neverthrow";
-import { fromPrisma } from "../lib/from-promise.js";
+import { errAsync, type ResultAsync } from "neverthrow";
 import { NotFoundError, type PrismaError } from "../lib/errors.js";
+import { fromPrisma } from "../lib/from-promise.js";
 import type { UserPreference } from "../schemas/users.js";
 
 type CategoryIds = { id: string }[];

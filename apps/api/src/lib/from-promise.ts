@@ -19,6 +19,7 @@ import { PrismaError } from "./errors.js";
  * );
  */
 export const fromPrisma = <T>(promise: Promise<T>): ResultAsync<T, PrismaError> =>
-  ResultAsync.fromPromise(promise, (e) =>
-    new PrismaError(e instanceof Error ? e.message : "Database error", e),
+  ResultAsync.fromPromise(
+    promise,
+    (e) => new PrismaError(e instanceof Error ? e.message : "Database error", e),
   );
