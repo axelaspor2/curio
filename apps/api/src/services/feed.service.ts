@@ -58,9 +58,13 @@ export const feedService = {
     let cursorId: string | null = null;
     if (cursor) {
       const decoded = Buffer.from(cursor, "base64").toString("utf-8");
-      const [publishedAtStr, id] = decoded.split("_");
-      cursorPublishedAt = publishedAtStr === "null" ? null : new Date(publishedAtStr);
-      cursorId = id;
+      const cursorParts = decoded.split("_");
+      const publishedAtStr = cursorParts[0];
+      const id = cursorParts[1];
+      if (publishedAtStr !== undefined && id !== undefined) {
+        cursorPublishedAt = publishedAtStr === "null" ? null : new Date(publishedAtStr);
+        cursorId = id;
+      }
     }
 
     // インタラクション済みの記事IDを取得するサブクエリ
