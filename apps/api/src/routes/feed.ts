@@ -2,17 +2,19 @@
  * フィードAPIルート
  */
 
-import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
-import { feedService } from "../services/feed.service.js";
-import { FeedQuerySchema, FeedResponseSchema } from "../schemas/feed.js";
+import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { ErrorResponseSchema } from "../schemas/common.js";
+import { FeedQuerySchema, FeedResponseSchema } from "../schemas/feed.js";
+import { feedService } from "../services/feed.service.js";
+import type { AppEnv } from "../types/hono.js";
 
 const getFeedRoute = createRoute({
   method: "get",
   path: "/",
   tags: ["Feed"],
   summary: "フィード取得",
-  description: "ユーザー向けのパーソナライズされたフィードを取得します。インタラクション済みの記事は除外されます。",
+  description:
+    "ユーザー向けのパーソナライズされたフィードを取得します。インタラクション済みの記事は除外されます。",
   request: {
     query: FeedQuerySchema,
   },
@@ -32,10 +34,9 @@ const getFeedRoute = createRoute({
   },
 });
 
-export const feedRouter = new OpenAPIHono().openapi(getFeedRoute, async (c) => {
-  // セッションからユーザーIDを取得（authMiddlewareで認証済み）
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const user = (c as any).get("user") as { id: string } | null;
+export const feedRouter = new OpenAPIHono<AppEnv>().openapi(getFeedRoute, async (c) => {
+  const user = c.get("user");
+
   if (!user) {
     return c.json({ error: "Unauthorized" }, 401);
   }
