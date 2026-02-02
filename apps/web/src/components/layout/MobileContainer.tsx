@@ -10,7 +10,7 @@ export function MobileContainer({ children, className }: MobileContainerProps) {
   return (
     <div
       className={cn(
-        "min-h-screen flex flex-col",
+        "h-dvh flex flex-col overflow-hidden",
         "bg-background text-foreground",
         "max-w-lg mx-auto",
         "sm:border-x sm:border-border/30",
