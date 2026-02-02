@@ -10,12 +10,7 @@ const DEFINED_ROUTES = [
   "/api/docs",
 ] as const;
 
-const PUBLIC_ROUTES = [
-  "/api/auth",
-  "/api/health",
-  "/api/categories",
-  "/api/docs",
-] as const;
+const PUBLIC_ROUTES = ["/api/auth", "/api/health", "/api/categories", "/api/docs"] as const;
 
 /**
  * 認証ミドルウェア
