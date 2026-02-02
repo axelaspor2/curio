@@ -18,7 +18,6 @@ export function ActionButtons({
 }: ActionButtonsProps) {
   return (
     <div className="flex items-center justify-center gap-6 py-4">
-      {/* Undo button */}
       <button
         type="button"
         onClick={onUndo}
@@ -37,7 +36,6 @@ export function ActionButtons({
         <FluentEmoji name="arrow-undo" size={24} />
       </button>
 
-      {/* Skip button */}
       <button
         type="button"
         onClick={onSkip}
@@ -56,7 +54,6 @@ export function ActionButtons({
         <FluentEmoji name="waving-hand" size={32} />
       </button>
 
-      {/* Like button */}
       <button
         type="button"
         onClick={onLike}

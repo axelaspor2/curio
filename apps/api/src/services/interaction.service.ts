@@ -1,9 +1,3 @@
-/**
- * インタラクションサービス
- *
- * インタラクション関連のビジネスロジックを提供します。
- */
-
 import { prisma } from "@curio/database";
 import { errAsync, type ResultAsync } from "neverthrow";
 import { NotFoundError, type PrismaError } from "../lib/errors.js";
@@ -19,7 +13,8 @@ type InteractionResult = {
 
 export const interactionService = {
   /**
-   * インタラクションを記録
+   * ユーザーの記事に対するインタラクション(SKIP/LIKE/OPEN/READ)を記録
+   * 存在しない記事へのインタラクションを防ぐため、事前に記事の存在を検証
    */
   create: (
     userId: string,
@@ -27,7 +22,6 @@ export const interactionService = {
     type: InteractionType,
     readingTimeSec?: number,
   ): ResultAsync<InteractionResult, PrismaError | NotFoundError> =>
-    // まず記事の存在確認
     fromPrisma<{ id: string } | null>(
       prisma.article.findUnique({
         where: { id: articleId },
@@ -38,13 +32,13 @@ export const interactionService = {
         return errAsync(new NotFoundError("記事が見つかりません"));
       }
 
-      // インタラクションを作成
       return fromPrisma<InteractionResult>(
         prisma.interaction.create({
           data: {
             userId,
             articleId,
             type,
+            // READタイプのみ読了時間を記録（将来の分析用）
             readingTimeSec: type === "READ" ? readingTimeSec : null,
           },
           select: {

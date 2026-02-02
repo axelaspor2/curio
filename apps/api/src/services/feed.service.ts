@@ -1,9 +1,3 @@
-/**
- * フィードサービス
- *
- * フィード関連のビジネスロジックを提供します。
- */
-
 import { prisma } from "@curio/database";
 import type { ResultAsync } from "neverthrow";
 import type { PrismaError } from "../lib/errors.js";
@@ -38,10 +32,8 @@ type ArticleFromDb = {
 
 export const feedService = {
   /**
-   * フィードを取得
-   * - インタラクション済みの記事は除外
-   * - カテゴリフィルタ対応
-   * - カーソルベースのページネーション
+   * インタラクション済み記事を除外したフィードを取得
+   * publishedAt + idの複合カーソルで一意なページネーションを実現
    */
   getFeed: (
     userId: string,
@@ -53,7 +45,7 @@ export const feedService = {
   ): ResultAsync<FeedResult, PrismaError> => {
     const { limit, cursor, categoryId } = options;
 
-    // カーソルをデコード (format: "publishedAt_id" or "null_id")
+    // カーソル形式: base64("publishedAt_id") - publishedAtがnullの記事にも対応
     let cursorPublishedAt: Date | null = null;
     let cursorId: string | null = null;
     if (cursor) {
@@ -67,11 +59,9 @@ export const feedService = {
       }
     }
 
-    // インタラクション済みの記事IDを取得するサブクエリ
     return fromPrisma<ArticleFromDb[]>(
       prisma.article.findMany({
         where: {
-          // インタラクション済みの記事を除外
           NOT: {
             interactions: {
               some: {
@@ -79,7 +69,6 @@ export const feedService = {
               },
             },
           },
-          // カテゴリフィルタ
           ...(categoryId
             ? {
                 categories: {
@@ -89,13 +78,11 @@ export const feedService = {
                 },
               }
             : {}),
-          // カーソルがある場合は、そのpublishedAt/IDより後の記事を取得
+          // publishedAtが同じ記事が複数ある場合にidで順序を決定
           ...(cursorId
             ? {
                 OR: [
-                  // publishedAtがカーソルより古い場合
                   ...(cursorPublishedAt ? [{ publishedAt: { lt: cursorPublishedAt } }] : []),
-                  // publishedAtが同じ場合はIDで比較
                   {
                     publishedAt: cursorPublishedAt,
                     id: { lt: cursorId },
@@ -105,7 +92,8 @@ export const feedService = {
             : {}),
         },
         orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
-        take: limit + 1, // 次のページがあるか確認するために1件多く取得
+        // hasMoreの判定用に1件多く取得
+        take: limit + 1,
         select: {
           id: true,
           title: true,
@@ -137,7 +125,6 @@ export const feedService = {
       const resultArticles = hasMore ? articles.slice(0, limit) : articles;
       const lastArticle = resultArticles.at(-1);
 
-      // カーソルをエンコード (format: "publishedAt_id")
       const nextCursor =
         hasMore && lastArticle
           ? Buffer.from(

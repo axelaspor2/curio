@@ -22,9 +22,7 @@ export interface SwipeableCardStackProps {
 
 export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCardStackProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  // Undo機能のためにスワイプ履歴を保持
   const [history, setHistory] = useState<{ article: Article; type: InteractionType }[]>([]);
-  // ドラッグ終了時刻を記録（タップとドラッグを区別するため）
   const dragEndTimeRef = useRef(0);
 
   const x = useMotionValue(0);
@@ -89,8 +87,7 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
   );
 
   const handleTap = useCallback(() => {
-    // ドラッグ操作直後の誤タップを防ぐため、100ms以内のタップは無視
-    // framer-motionのonTapはドラッグ終了直後にも発火するため必要
+    // framer-motionのonTapはドラッグ終了直後にも発火するため、100ms以内は無視
     const timeSinceDragEnd = Date.now() - dragEndTimeRef.current;
     if (timeSinceDragEnd > 100 && currentArticle) {
       onCardTap?.(currentArticle);
@@ -112,7 +109,6 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
     animateSwipe("right");
   }, [animateSwipe]);
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
@@ -142,9 +138,7 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
 
   return (
     <div className="flex-1 flex flex-col">
-      {/* Card stack area */}
       <div className="flex-1 relative flex items-center justify-center p-4 overflow-hidden">
-        {/* Next card (background) */}
         {nextArticle && (
           <div
             className={cn(
@@ -159,8 +153,6 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
           </div>
         )}
 
-        {/* Current card (draggable) */}
-        {/* dragElastic: 0.7でゴムのような抵抗感を表現し、スワイプの意図を明確にする */}
         {currentArticle && (
           <motion.div
             className={cn(
@@ -183,7 +175,6 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
         )}
       </div>
 
-      {/* Swipe hints */}
       <div className="flex items-center justify-between px-8 py-2 text-xs text-muted-foreground">
         <span>← スキップ</span>
         <span className="text-muted-foreground/50">
@@ -192,7 +183,6 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
         <span>興味あり →</span>
       </div>
 
-      {/* Action buttons */}
       <div className="pb-safe">
         <ActionButtons
           onSkip={handleSkip}

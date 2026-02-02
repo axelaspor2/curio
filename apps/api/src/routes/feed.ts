@@ -1,7 +1,3 @@
-/**
- * フィードAPIルート
- */
-
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { ErrorResponseSchema } from "../schemas/common.js";
 import { FeedQuerySchema, FeedResponseSchema } from "../schemas/feed.js";

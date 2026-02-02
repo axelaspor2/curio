@@ -22,7 +22,6 @@ function formatRelativeTime(dateString: string | null): string {
   return date.toLocaleDateString("ja-JP", { month: "short", day: "numeric" });
 }
 
-// forwardRef: SwipeableCardStackのmotion.divからDOM参照を受け取るため
 export const ArticleCard = forwardRef<HTMLDivElement, ArticleCardProps>(
   ({ article, className, ...props }, ref) => {
     const primaryCategory = article.categories[0];
@@ -39,7 +38,6 @@ export const ArticleCard = forwardRef<HTMLDivElement, ArticleCardProps>(
         )}
         {...props}
       >
-        {/* Image area */}
         <div className="relative h-48 sm:h-56 bg-secondary overflow-hidden">
           {article.imageUrl ? (
             <img
@@ -53,13 +51,10 @@ export const ArticleCard = forwardRef<HTMLDivElement, ArticleCardProps>(
               <span className="text-6xl opacity-30">📰</span>
             </div>
           )}
-          {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
         </div>
 
-        {/* Content area */}
         <div className="flex-1 p-5 flex flex-col">
-          {/* Category and time */}
           <div className="flex items-center justify-between mb-3">
             {categorySlug && (
               <Badge variant="category" category={categorySlug}>
@@ -71,19 +66,16 @@ export const ArticleCard = forwardRef<HTMLDivElement, ArticleCardProps>(
             </span>
           </div>
 
-          {/* Title */}
           <h2 className="text-lg sm:text-xl font-semibold leading-snug mb-3 line-clamp-3">
             {article.title}
           </h2>
 
-          {/* Summary */}
           {article.summary && (
             <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 flex-1">
               {article.summary}
             </p>
           )}
 
-          {/* Source */}
           <div className="mt-4 pt-3 border-t border-border/30">
             <span className="text-xs text-muted-foreground font-medium">{article.source.name}</span>
           </div>

@@ -1,7 +1,3 @@
-/**
- * インタラクションAPIルート
- */
-
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi";
 import { NotFoundError } from "../lib/errors.js";
 import { ErrorResponseSchema } from "../schemas/common.js";
