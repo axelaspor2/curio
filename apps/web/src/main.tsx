@@ -1,23 +1,23 @@
-import { StrictMode } from "react"
-import { createRoot } from "react-dom/client"
-import { Provider } from "jotai"
-import { QueryClientProvider } from "@tanstack/react-query"
-import { RouterProvider, createRouter } from "@tanstack/react-router"
-import { ThemeProvider } from "@/components/providers/ThemeProvider"
-import { queryClient } from "@/lib/query-client"
-import { routeTree } from "./routeTree.gen"
-import "@/styles/globals.css"
+import { QueryClientProvider } from "@tanstack/react-query";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { Provider } from "jotai";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { queryClient } from "@/lib/query-client";
+import { routeTree } from "./routeTree.gen";
+import "@/styles/globals.css";
 
-const router = createRouter({ routeTree })
+const router = createRouter({ routeTree });
 
 declare module "@tanstack/react-router" {
   interface Register {
-    router: typeof router
+    router: typeof router;
   }
 }
 
-const rootElement = document.getElementById("root")
-if (!rootElement) throw new Error("Root element not found")
+const rootElement = document.getElementById("root");
+if (!rootElement) throw new Error("Root element not found");
 
 createRoot(rootElement).render(
   <StrictMode>
@@ -28,5 +28,5 @@ createRoot(rootElement).render(
         </ThemeProvider>
       </QueryClientProvider>
     </Provider>
-  </StrictMode>
-)
+  </StrictMode>,
+);
