@@ -3,6 +3,7 @@ import { Loader2 } from "lucide-react";
 import { AuthGuard } from "@/components/auth";
 import { SwipeableCardStack } from "@/components/feed";
 import { Header, MobileContainer } from "@/components/layout";
+import { FluentEmoji } from "@/components/ui";
 import { useFeedArticles, useInteraction } from "@/hooks";
 import type { Article, InteractionType } from "@/types/feed";
 
@@ -36,7 +37,9 @@ function HomePage() {
 
           {isError && (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-              <div className="text-4xl mb-4">😵</div>
+              <div className="mb-4 animate-emoji-wiggle">
+                <FluentEmoji name="dizzy-face" size={64} />
+              </div>
               <h2 className="text-lg font-semibold mb-2">読み込みエラー</h2>
               <p className="text-sm text-muted-foreground mb-4">
                 {error?.message ?? "記事の取得に失敗しました"}
@@ -53,7 +56,9 @@ function HomePage() {
 
           {!isLoading && !isError && articles.length === 0 && (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-              <div className="text-6xl mb-4">📭</div>
+              <div className="mb-4 animate-emoji-pop">
+                <FluentEmoji name="open-mailbox" size={80} />
+              </div>
               <h2 className="text-lg font-semibold mb-2">記事がありません</h2>
               <p className="text-sm text-muted-foreground">
                 新しい記事が追加されるまでお待ちください

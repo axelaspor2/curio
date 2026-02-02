@@ -1,5 +1,6 @@
 import { motion, type PanInfo, useAnimation, useMotionValue, useTransform } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { FluentEmoji } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type { Article, InteractionType } from "@/types/feed";
 import { ActionButtons } from "./ActionButtons";
@@ -123,7 +124,9 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
   if (!hasMore) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-        <div className="text-6xl mb-4">🎉</div>
+        <div className="mb-4 animate-emoji-bounce">
+          <FluentEmoji name="party-popper" size={80} />
+        </div>
         <h2 className="text-xl font-semibold mb-2">すべての記事を確認しました！</h2>
         <p className="text-muted-foreground">また後で新しい記事をチェックしてください</p>
       </div>

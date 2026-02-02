@@ -1,5 +1,5 @@
 import { type MotionValue, motion, useTransform } from "framer-motion";
-import { Heart, X } from "lucide-react";
+import { FluentEmoji } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 export interface SwipeIndicatorProps {
@@ -29,7 +29,7 @@ export function SwipeIndicator({ x, threshold = 100 }: SwipeIndicatorProps) {
           scale: likeScale,
         }}
       >
-        <Heart className="w-8 h-8 text-swipe-like fill-swipe-like" />
+        <FluentEmoji name="red-heart" size={32} />
       </motion.div>
 
       {/* Skip indicator (left) */}
@@ -46,7 +46,7 @@ export function SwipeIndicator({ x, threshold = 100 }: SwipeIndicatorProps) {
           scale: skipScale,
         }}
       >
-        <X className="w-8 h-8 text-swipe-skip" />
+        <FluentEmoji name="waving-hand" size={32} />
       </motion.div>
     </>
   );

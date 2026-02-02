@@ -1,4 +1,4 @@
-import { Heart, RotateCcw, X } from "lucide-react";
+import { FluentEmoji } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 export interface ActionButtonsProps {
@@ -34,7 +34,7 @@ export function ActionButtons({
         )}
         aria-label="元に戻す"
       >
-        <RotateCcw className="w-5 h-5 text-muted-foreground" />
+        <FluentEmoji name="arrow-undo" size={24} />
       </button>
 
       {/* Skip button */}
@@ -53,7 +53,7 @@ export function ActionButtons({
         )}
         aria-label="スキップ"
       >
-        <X className="w-8 h-8 text-swipe-skip" />
+        <FluentEmoji name="waving-hand" size={32} />
       </button>
 
       {/* Like button */}
@@ -72,7 +72,7 @@ export function ActionButtons({
         )}
         aria-label="興味あり"
       >
-        <Heart className="w-8 h-8 text-swipe-like" />
+        <FluentEmoji name="red-heart" size={32} />
       </button>
     </div>
   );

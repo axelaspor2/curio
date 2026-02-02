@@ -117,13 +117,15 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    font-family: "Zen Kaku Gothic New", "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
   }
 }
 
 /* Typography */
 .font-display {
-  font-family: "Cormorant Garamond", "Times New Roman", serif;
+  font-family: "Outfit", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .font-mono-accent {
@@ -188,4 +190,65 @@
 
 .pt-safe {
   padding-top: env(safe-area-inset-top);
+}
+
+/* Emoji animations */
+@keyframes emoji-bounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.1);
+  }
+}
+
+@keyframes emoji-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes emoji-wiggle {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-10deg);
+  }
+  75% {
+    transform: rotate(10deg);
+  }
+}
+
+.animate-emoji-bounce {
+  animation: emoji-bounce 1s ease-in-out infinite;
+}
+
+.animate-emoji-pop {
+  animation: emoji-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-emoji-wiggle {
+  animation: emoji-wiggle 0.5s ease-in-out;
+}
+
+/* Hover effect for emoji buttons */
+.emoji-btn {
+  transition: transform 0.2s ease;
+}
+
+.emoji-btn:hover {
+  transform: scale(1.15);
+}
+
+.emoji-btn:active {
+  transform: scale(0.95);
 }

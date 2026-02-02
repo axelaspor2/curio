@@ -1,5 +1,5 @@
 import { useAtom } from "jotai";
-import { LogOut, Moon, Sun } from "lucide-react";
+import { FluentEmoji } from "@/components/ui";
 import { useAuth } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { themeAtom } from "@/store/atoms/theme";
@@ -44,10 +44,11 @@ export function Header({ className }: HeaderProps) {
             "flex items-center justify-center",
             "bg-secondary/50 hover:bg-secondary",
             "transition-colors duration-200",
+            "emoji-btn",
           )}
           aria-label={theme === "dark" ? "ライトモードに切替" : "ダークモードに切替"}
         >
-          {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          <FluentEmoji name={theme === "dark" ? "sun" : "crescent-moon"} size={20} />
         </button>
 
         {/* Logout button */}
@@ -59,10 +60,11 @@ export function Header({ className }: HeaderProps) {
             "flex items-center justify-center",
             "bg-secondary/50 hover:bg-secondary",
             "transition-colors duration-200",
+            "emoji-btn",
           )}
           aria-label="ログアウト"
         >
-          <LogOut className="w-4 h-4" />
+          <FluentEmoji name="door" size={20} />
         </button>
       </div>
     </header>

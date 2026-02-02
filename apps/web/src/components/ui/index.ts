@@ -9,4 +9,5 @@ export {
   type CardProps,
   CardTitle,
 } from "./Card";
+export { type EmojiName, FluentEmoji, type FluentEmojiProps } from "./FluentEmoji";
 export { Input, type InputProps } from "./Input";
