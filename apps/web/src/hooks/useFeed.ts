@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import type { Article, FeedResponse } from "@/types/feed";
 import { honoClient } from "@/lib/hono";
+import type { Article, FeedResponse } from "@/types/feed";
 
 interface UseFeedOptions {
   limit?: number;

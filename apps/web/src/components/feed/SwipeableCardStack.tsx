@@ -1,5 +1,5 @@
 import { motion, type PanInfo, useAnimation, useMotionValue, useTransform } from "framer-motion";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import type { Article, InteractionType } from "@/types/feed";
 import { ActionButtons } from "./ActionButtons";
@@ -19,6 +19,7 @@ export interface SwipeableCardStackProps {
 export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCardStackProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [history, setHistory] = useState<{ article: Article; type: InteractionType }[]>([]);
+  const dragEndTimeRef = useRef(0);
 
   const x = useMotionValue(0);
   const controls = useAnimation();
@@ -62,6 +63,7 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
 
   const handleDragEnd = useCallback(
     (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      dragEndTimeRef.current = Date.now();
       const swipeThreshold = SWIPE_THRESHOLD;
       const velocity = info.velocity.x;
 
@@ -79,6 +81,13 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
     },
     [animateSwipe, controls],
   );
+
+  const handleTap = useCallback(() => {
+    const timeSinceDragEnd = Date.now() - dragEndTimeRef.current;
+    if (timeSinceDragEnd > 100 && currentArticle) {
+      onCardTap?.(currentArticle);
+    }
+  }, [currentArticle, onCardTap]);
 
   const handleUndo = useCallback(() => {
     if (history.length === 0) return;
@@ -154,7 +163,7 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.7}
             onDragEnd={handleDragEnd}
-            onClick={() => onCardTap?.(currentArticle)}
+            onTap={handleTap}
             whileTap={{ scale: 0.98 }}
           >
             <SwipeIndicator x={x} threshold={SWIPE_THRESHOLD} />

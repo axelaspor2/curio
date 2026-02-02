@@ -1,5 +1,6 @@
 import { useAtom } from "jotai";
-import { Moon, Sun } from "lucide-react";
+import { LogOut, Moon, Sun } from "lucide-react";
+import { useAuth } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { themeAtom } from "@/store/atoms/theme";
 
@@ -9,6 +10,7 @@ export interface HeaderProps {
 
 export function Header({ className }: HeaderProps) {
   const [theme, setTheme] = useAtom(themeAtom);
+  const { signOut } = useAuth();
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -46,6 +48,21 @@ export function Header({ className }: HeaderProps) {
           aria-label={theme === "dark" ? "ライトモードに切替" : "ダークモードに切替"}
         >
           {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </button>
+
+        {/* Logout button */}
+        <button
+          type="button"
+          onClick={signOut}
+          className={cn(
+            "w-9 h-9 rounded-full",
+            "flex items-center justify-center",
+            "bg-secondary/50 hover:bg-secondary",
+            "transition-colors duration-200",
+          )}
+          aria-label="ログアウト"
+        >
+          <LogOut className="w-4 h-4" />
         </button>
       </div>
     </header>

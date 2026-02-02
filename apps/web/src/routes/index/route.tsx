@@ -4,7 +4,7 @@ import { AuthGuard } from "@/components/auth";
 import { SwipeableCardStack } from "@/components/feed";
 import { Header, MobileContainer } from "@/components/layout";
 import { useFeedArticles, useInteraction } from "@/hooks";
-import type { InteractionType } from "@/types/feed";
+import type { Article, InteractionType } from "@/types/feed";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -16,6 +16,11 @@ function HomePage() {
 
   const handleSwipe = (articleId: string, type: InteractionType) => {
     recordInteraction(articleId, type);
+  };
+
+  const handleCardTap = (article: Article) => {
+    recordInteraction(article.id, "OPEN");
+    window.open(article.url, "_blank");
   };
 
   return (
@@ -57,7 +62,11 @@ function HomePage() {
           )}
 
           {!isLoading && !isError && articles.length > 0 && (
-            <SwipeableCardStack articles={articles} onSwipe={handleSwipe} />
+            <SwipeableCardStack
+              articles={articles}
+              onSwipe={handleSwipe}
+              onCardTap={handleCardTap}
+            />
           )}
         </main>
       </MobileContainer>

@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import type { InteractionType } from "@/types/feed";
 import { honoClient } from "@/lib/hono";
+import type { InteractionType } from "@/types/feed";
 
 interface CreateInteractionParams {
   articleId: string;
