@@ -68,7 +68,7 @@ jobs:
         working-directory: apps
 
       - name: Build database package
-        run: pnpm --filter @curio/database build
+        run: pnpm --filter @curio/database db:generate && pnpm --filter @curio/database build
         working-directory: apps
 
       - name: Build API
