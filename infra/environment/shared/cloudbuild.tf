@@ -11,6 +11,9 @@ resource "google_project_iam_member" "cloudbuild" {
     "roles/cloudbuild.builds.builder",
     "roles/run.admin",
     "roles/artifactregistry.writer",
+    "roles/serviceusage.serviceUsageViewer",
+    "roles/iam.serviceAccountViewer",
+    "roles/iam.serviceAccountUser",
   ])
 
   project = var.project_id
@@ -25,12 +28,16 @@ data "google_secret_manager_secret_version" "github_token" {
   secret = google_secret_manager_secret.main["GITHUB_CLOUDBUILD_V2REPO_OAUTH_TOKEN"].id
 }
 
+data "google_secret_manager_secret_version" "github_app_installation_id" {
+  secret = google_secret_manager_secret.main["GITHUB_APP_INSTALLATION_ID"].id
+}
+
 resource "google_cloudbuildv2_connection" "main" {
   location = var.region
   name     = "${var.project_name}-github"
 
   github_config {
-    app_installation_id = var.github_app_installation_id
+    app_installation_id = tonumber(data.google_secret_manager_secret_version.github_app_installation_id.secret_data)
     authorizer_credential {
       oauth_token_secret_version = data.google_secret_manager_secret_version.github_token.id
     }

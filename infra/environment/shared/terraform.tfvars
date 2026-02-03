@@ -6,6 +6,5 @@ region         = "asia-northeast1"
 zone           = "asia-northeast1-a"
 
 # --- GitHub設定 ---
-github_organization        = "axelaspor2"
-github_repository_name     = "curio"
-github_app_installation_id = 47374850
+github_organization    = "axelaspor2"
+github_repository_name = "curio"

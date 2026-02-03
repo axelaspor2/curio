@@ -10,12 +10,12 @@ locals {
         "service-${var.project_number}@gcp-sa-cloudbuild.iam.gserviceaccount.com",
       ]
     }
-    # 将来追加するシークレットの例:
-    # "DATABASE_PASSWORD" = {
-    #   accessors = [
-    #     google_service_account.api.email,
-    #   ]
-    # }
+    "GITHUB_APP_INSTALLATION_ID" = {
+      accessors = [
+        google_service_account.cloudbuild.email,
+        "service-${var.project_number}@gcp-sa-cloudbuild.iam.gserviceaccount.com",
+      ]
+    }
   }
 
   # シークレット×アクセサーの組み合わせをフラット化

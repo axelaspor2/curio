@@ -34,11 +34,6 @@ variable "github_organization" {
   type        = string
 }
 
-variable "github_app_installation_id" {
-  description = "The GitHub App installation ID"
-  type        = number
-}
-
 variable "github_repository_name" {
   description = "The GitHub repository name"
   type        = string
