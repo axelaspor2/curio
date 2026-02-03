@@ -20,10 +20,14 @@ describe("フィクスチャによるスキーマ検証", () => {
 
     expect(feed.items.length).toBeGreaterThan(0);
 
-    for (const item of feed.items) {
-      const result = FeedItemSchema.safeParse(item);
-      expect(result.success, `Invalid item: ${item.title}`).toBe(true);
-    }
+    const results = feed.items.map((item) => ({
+      title: item.title,
+      result: FeedItemSchema.safeParse(item),
+    }));
+
+    results.forEach(({ title, result }) => {
+      expect(result.success, `Invalid item: ${title}`).toBe(true);
+    });
   });
 
   it("Hacker Newsフィードの全アイテムが有効", async () => {
@@ -32,10 +36,14 @@ describe("フィクスチャによるスキーマ検証", () => {
 
     expect(feed.items.length).toBeGreaterThan(0);
 
-    for (const item of feed.items) {
-      const result = FeedItemSchema.safeParse(item);
-      expect(result.success, `Invalid item: ${item.title}`).toBe(true);
-    }
+    const results = feed.items.map((item) => ({
+      title: item.title,
+      result: FeedItemSchema.safeParse(item),
+    }));
+
+    results.forEach(({ title, result }) => {
+      expect(result.success, `Invalid item: ${title}`).toBe(true);
+    });
   });
 
   it("TechCrunchフィードの全アイテムが有効", async () => {
@@ -44,9 +52,13 @@ describe("フィクスチャによるスキーマ検証", () => {
 
     expect(feed.items.length).toBeGreaterThan(0);
 
-    for (const item of feed.items) {
-      const result = FeedItemSchema.safeParse(item);
-      expect(result.success, `Invalid item: ${item.title}`).toBe(true);
-    }
+    const results = feed.items.map((item) => ({
+      title: item.title,
+      result: FeedItemSchema.safeParse(item),
+    }));
+
+    results.forEach(({ title, result }) => {
+      expect(result.success, `Invalid item: ${title}`).toBe(true);
+    });
   });
 });

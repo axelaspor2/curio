@@ -37,21 +37,24 @@ export const rssService = {
       return new FeedFetchError(`Failed to fetch feed: ${message}`, source.url, e);
     }).andThen((feed) => {
       const rawItems = feed.items ?? [];
-      const validItems: FeedItem[] = [];
-      let invalidCount = 0;
 
-      for (const rawItem of rawItems) {
-        const result = FeedItemSchema.safeParse(rawItem);
-        if (result.success) {
-          validItems.push(result.data);
-        } else {
-          invalidCount++;
+      const { validItems, invalidCount } = rawItems.reduce<{
+        validItems: FeedItem[];
+        invalidCount: number;
+      }>(
+        (acc, rawItem) => {
+          const result = FeedItemSchema.safeParse(rawItem);
+          if (result.success) {
+            return { ...acc, validItems: [...acc.validItems, result.data] };
+          }
           logger.debug(
             { sourceId: source.id, errors: result.error.issues, rawItem },
             "Invalid feed item skipped",
           );
-        }
-      }
+          return { ...acc, invalidCount: acc.invalidCount + 1 };
+        },
+        { validItems: [], invalidCount: 0 },
+      );
 
       if (invalidCount > 0) {
         logger.warn(
@@ -71,58 +74,62 @@ export const rssService = {
     items: FeedItem[],
     invalidCount: number = 0,
   ): ResultAsync<FetchResult, FeedParseError> => {
+    const parsePublishedAt = (item: FeedItem): Date | null =>
+      item.isoDate ? new Date(item.isoDate) : item.pubDate ? new Date(item.pubDate) : null;
+
+    const saveItem = async (
+      item: FeedItem,
+    ): Promise<{ saved: boolean; skipped: boolean }> => {
+      const externalId = item.guid ?? null;
+
+      // 同一ソース内でguidが一致、または全体でURLが一致する記事は重複とみなす
+      // guidはソース間で衝突する可能性があるため、sourceIdと組み合わせて検索
+      const existing = await prisma.article.findFirst({
+        where: {
+          OR: [...(externalId ? [{ sourceId, externalId }] : []), { url: item.link }],
+        },
+      });
+
+      if (existing) {
+        return { saved: false, skipped: true };
+      }
+
+      await prisma.article.create({
+        data: {
+          sourceId,
+          externalId,
+          title: item.title,
+          content: item.content ?? null,
+          summary: item.contentSnippet ?? null,
+          url: item.link,
+          imageUrl: item.enclosure?.url ?? null,
+          publishedAt: parsePublishedAt(item),
+        },
+      });
+
+      return { saved: true, skipped: false };
+    };
+
     return ResultAsync.fromPromise(
-      (async () => {
-        let savedCount = 0;
-        let skippedCount = 0;
-
-        for (const item of items) {
-          const externalId = item.guid ?? null;
-
-          // 同一ソース内でguidが一致、または全体でURLが一致する記事は重複とみなす
-          // guidはソース間で衝突する可能性があるため、sourceIdと組み合わせて検索
-          const existing = await prisma.article.findFirst({
-            where: {
-              OR: [...(externalId ? [{ sourceId, externalId }] : []), { url: item.link }],
-            },
-          });
-
-          if (existing) {
-            skippedCount++;
-            continue;
-          }
-
-          // isoDateを優先（ISO 8601形式で解析しやすい）、なければpubDateにフォールバック
-          let publishedAt: Date | null = null;
-          if (item.isoDate) {
-            publishedAt = new Date(item.isoDate);
-          } else if (item.pubDate) {
-            publishedAt = new Date(item.pubDate);
-          }
-
-          await prisma.article.create({
-            data: {
-              sourceId,
-              externalId,
-              title: item.title,
-              content: item.content ?? null,
-              summary: item.contentSnippet ?? null,
-              url: item.link,
-              imageUrl: item.enclosure?.url ?? null,
-              publishedAt,
-            },
-          });
-          savedCount++;
-        }
-
-        return {
+      items
+        .reduce<Promise<{ savedCount: number; skippedCount: number }>>(
+          async (accPromise, item) => {
+            const acc = await accPromise;
+            const result = await saveItem(item);
+            return {
+              savedCount: acc.savedCount + (result.saved ? 1 : 0),
+              skippedCount: acc.skippedCount + (result.skipped ? 1 : 0),
+            };
+          },
+          Promise.resolve({ savedCount: 0, skippedCount: 0 }),
+        )
+        .then(({ savedCount, skippedCount }) => ({
           sourceId,
           sourceName,
           savedCount,
           skippedCount,
           invalidCount,
-        };
-      })(),
+        })),
       (e) => {
         const message = e instanceof Error ? e.message : "Unknown error";
         return new FeedParseError(`Failed to save articles: ${message}`, "", e);
@@ -131,6 +138,38 @@ export const rssService = {
   },
 
   fetchAllSources: (): ResultAsync<FetchResult[], never> => {
+    const processSource = async (source: Source): Promise<FetchResult> => {
+      logger.info({ sourceId: source.id, name: source.name, url: source.url }, "Fetching feed");
+
+      const result = await rssService.fetchAndSaveArticles(source);
+
+      return result.match(
+        (fetchResult) => {
+          logger.info(
+            {
+              sourceId: source.id,
+              saved: fetchResult.savedCount,
+              skipped: fetchResult.skippedCount,
+              invalid: fetchResult.invalidCount,
+            },
+            "Feed fetch completed",
+          );
+          return fetchResult;
+        },
+        (error) => {
+          logger.error({ sourceId: source.id, error: error.message }, "Feed fetch failed");
+          return {
+            sourceId: source.id,
+            sourceName: source.name,
+            savedCount: 0,
+            skippedCount: 0,
+            invalidCount: 0,
+            error: error.message,
+          };
+        },
+      );
+    };
+
     return ResultAsync.fromPromise(
       prisma.source.findMany({
         where: { type: { in: ["rss", "atom"] } },
@@ -138,48 +177,19 @@ export const rssService = {
       () => [] as Source[],
     )
       .orElse(() => okAsync([] as Source[]))
-      .andThen((sources) => {
-        return ResultAsync.fromPromise(
-          (async () => {
-            const results: FetchResult[] = [];
-
-            for (const source of sources) {
-              logger.info({ sourceId: source.id, name: source.name, url: source.url }, "Fetching feed");
-
-              const result = await rssService.fetchAndSaveArticles(source);
-
-              result.match(
-                (fetchResult) => {
-                  logger.info(
-                    {
-                      sourceId: source.id,
-                      saved: fetchResult.savedCount,
-                      skipped: fetchResult.skippedCount,
-                      invalid: fetchResult.invalidCount,
-                    },
-                    "Feed fetch completed",
-                  );
-                  results.push(fetchResult);
-                },
-                (error) => {
-                  logger.error({ sourceId: source.id, error: error.message }, "Feed fetch failed");
-                  results.push({
-                    sourceId: source.id,
-                    sourceName: source.name,
-                    savedCount: 0,
-                    skippedCount: 0,
-                    invalidCount: 0,
-                    error: error.message,
-                  });
-                },
-              );
-            }
-
-            return results;
-          })(),
+      .andThen((sources) =>
+        ResultAsync.fromPromise(
+          sources.reduce<Promise<FetchResult[]>>(
+            async (accPromise, source) => {
+              const acc = await accPromise;
+              const result = await processSource(source);
+              return [...acc, result];
+            },
+            Promise.resolve([]),
+          ),
           () => [] as FetchResult[],
-        );
-      })
+        ),
+      )
       .orElse(() => okAsync([] as FetchResult[]));
   },
 };
