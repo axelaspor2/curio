@@ -80,6 +80,8 @@ resource "google_cloudbuild_trigger" "terraform_plan" {
     }
   }
 
+  included_files = ["infra/environment/${each.key}/**", "infra/cloudbuild/**"]
+
   filename        = "infra/cloudbuild/terraform-plan.yaml"
   service_account = google_service_account.cloudbuild.id
 
@@ -101,6 +103,8 @@ resource "google_cloudbuild_trigger" "terraform_apply" {
       branch = "^main$"
     }
   }
+
+  included_files = ["infra/environment/${each.key}/**", "infra/cloudbuild/**"]
 
   filename        = "infra/cloudbuild/terraform-apply.yaml"
   service_account = google_service_account.cloudbuild.id
