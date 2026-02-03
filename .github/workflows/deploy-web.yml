@@ -1,0 +1,88 @@
+# ============================================================================
+# Curio Frontend Deployment to GitHub Pages
+# ============================================================================
+
+name: Deploy Web to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/web/**'
+      - 'apps/api/**'
+      - 'apps/packages/database/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+          cache-dependency-path: apps/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: apps
+
+      - name: Generate Prisma client
+        run: pnpm --filter @curio/database db:generate
+        working-directory: apps
+
+      - name: Build database package
+        run: pnpm --filter @curio/database build
+        working-directory: apps
+
+      - name: Build API (for types)
+        run: pnpm --filter @curio/api build
+        working-directory: apps
+
+      - name: Generate TanStack Router route tree
+        run: pnpm --filter @curio/web exec tsr generate
+        working-directory: apps
+
+      - name: Build Web
+        run: pnpm --filter @curio/web build
+        working-directory: apps
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
