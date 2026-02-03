@@ -1,0 +1,49 @@
+# Terraform Plan Pipeline for PR validation
+# https://cloud.google.com/build/docs/build-config
+#
+# Service Account: cloudbuild@${PROJECT_ID}.iam.gserviceaccount.com
+
+substitutions:
+  _TF_VERSION: "1.14"
+  _TF_DIR: "infra/environment/shared"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  # 1. Format Check
+  - id: "terraform-fmt"
+    name: "hashicorp/terraform:${_TF_VERSION}"
+    dir: "${_TF_DIR}"
+    args:
+      - fmt
+      - -check
+      - -recursive
+
+  # 2. Initialize
+  - id: "terraform-init"
+    name: "hashicorp/terraform:${_TF_VERSION}"
+    dir: "${_TF_DIR}"
+    args:
+      - init
+      - -input=false
+
+  # 3. Validate
+  - id: "terraform-validate"
+    name: "hashicorp/terraform:${_TF_VERSION}"
+    dir: "${_TF_DIR}"
+    args:
+      - validate
+      - -no-color
+
+  # 4. Plan (PR validation only, no apply)
+  - id: "terraform-plan"
+    name: "hashicorp/terraform:${_TF_VERSION}"
+    dir: "${_TF_DIR}"
+    args:
+      - plan
+      - -no-color
+      - -lock=false
+      - -input=false
+
+timeout: "600s"
