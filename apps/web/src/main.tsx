@@ -8,7 +8,17 @@ import { queryClient } from "@/lib/query-client";
 import { routeTree } from "./routeTree.gen";
 import "@/styles/globals.css";
 
-const router = createRouter({ routeTree });
+// GitHub Pages SPA routing: handle redirect from 404.html
+const spaRedirect = sessionStorage.getItem("spa-redirect");
+if (spaRedirect) {
+  sessionStorage.removeItem("spa-redirect");
+  // Replace current URL with the original path (client-side routing will handle it)
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const targetPath = spaRedirect.replace(basePath, "") || "/";
+  window.history.replaceState(null, "", basePath + targetPath);
+}
+
+const router = createRouter({ routeTree, basepath: import.meta.env.BASE_URL });
 
 declare module "@tanstack/react-router" {
   interface Register {
