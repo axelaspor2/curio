@@ -1,8 +1,15 @@
+/**
+ * RSSフィード取得・保存サービス
+ *
+ * 登録されたソースからRSS/Atomフィードを取得し、
+ * Zodスキーマで検証した後、DBに保存する。
+ */
 import Parser from "rss-parser";
 import { prisma, type Source } from "@curio/database";
 import { ResultAsync, okAsync } from "neverthrow";
 import { FeedFetchError, FeedParseError, type JobError } from "./errors.js";
 import { logger } from "../lib/logger.js";
+import { FeedItemSchema, type FeedItem } from "./schema.js";
 
 const parser = new Parser({
   timeout: 30000,
@@ -11,47 +18,58 @@ const parser = new Parser({
   },
 });
 
-type FeedItem = {
-  guid?: string;
-  link?: string;
-  title?: string;
-  content?: string;
-  contentSnippet?: string;
-  pubDate?: string;
-  isoDate?: string;
-  enclosure?: { url?: string };
-};
-
 type FetchResult = {
   sourceId: string;
   sourceName: string;
   savedCount: number;
   skippedCount: number;
+  invalidCount: number;
   error?: string;
 };
 
 export const rssService = {
   /**
-   * 単一ソースからフィードを取得してDBに保存
+   * rss-parserの出力は型が保証されないため、Zodで実行時検証を行う
    */
   fetchAndSaveArticles: (source: Source): ResultAsync<FetchResult, JobError> => {
     return ResultAsync.fromPromise(parser.parseURL(source.url), (e) => {
       const message = e instanceof Error ? e.message : "Unknown error";
       return new FeedFetchError(`Failed to fetch feed: ${message}`, source.url, e);
     }).andThen((feed) => {
-      const items = feed.items ?? [];
-      logger.debug({ sourceId: source.id, itemCount: items.length }, "Parsed feed items");
-      return rssService.saveArticles(source.id, source.name, items);
+      const rawItems = feed.items ?? [];
+      const validItems: FeedItem[] = [];
+      let invalidCount = 0;
+
+      for (const rawItem of rawItems) {
+        const result = FeedItemSchema.safeParse(rawItem);
+        if (result.success) {
+          validItems.push(result.data);
+        } else {
+          invalidCount++;
+          logger.debug(
+            { sourceId: source.id, errors: result.error.issues, rawItem },
+            "Invalid feed item skipped",
+          );
+        }
+      }
+
+      if (invalidCount > 0) {
+        logger.warn(
+          { sourceId: source.id, invalidCount, totalCount: rawItems.length },
+          "Some feed items failed validation",
+        );
+      }
+
+      logger.debug({ sourceId: source.id, validCount: validItems.length }, "Validated feed items");
+      return rssService.saveArticles(source.id, source.name, validItems, invalidCount);
     });
   },
 
-  /**
-   * フィードアイテムをArticleとして保存（重複スキップ）
-   */
   saveArticles: (
     sourceId: string,
     sourceName: string,
     items: FeedItem[],
+    invalidCount: number = 0,
   ): ResultAsync<FetchResult, FeedParseError> => {
     return ResultAsync.fromPromise(
       (async () => {
@@ -59,21 +77,13 @@ export const rssService = {
         let skippedCount = 0;
 
         for (const item of items) {
-          const url = item.link;
-          if (!url) {
-            skippedCount++;
-            continue;
-          }
-
           const externalId = item.guid ?? null;
 
-          // externalIdまたはurlで重複チェック
+          // 同一ソース内でguidが一致、または全体でURLが一致する記事は重複とみなす
+          // guidはソース間で衝突する可能性があるため、sourceIdと組み合わせて検索
           const existing = await prisma.article.findFirst({
             where: {
-              OR: [
-                ...(externalId ? [{ sourceId, externalId }] : []),
-                { url },
-              ],
+              OR: [...(externalId ? [{ sourceId, externalId }] : []), { url: item.link }],
             },
           });
 
@@ -82,7 +92,7 @@ export const rssService = {
             continue;
           }
 
-          // 公開日時のパース
+          // isoDateを優先（ISO 8601形式で解析しやすい）、なければpubDateにフォールバック
           let publishedAt: Date | null = null;
           if (item.isoDate) {
             publishedAt = new Date(item.isoDate);
@@ -94,10 +104,10 @@ export const rssService = {
             data: {
               sourceId,
               externalId,
-              title: item.title ?? "Untitled",
+              title: item.title,
               content: item.content ?? null,
               summary: item.contentSnippet ?? null,
-              url,
+              url: item.link,
               imageUrl: item.enclosure?.url ?? null,
               publishedAt,
             },
@@ -110,6 +120,7 @@ export const rssService = {
           sourceName,
           savedCount,
           skippedCount,
+          invalidCount,
         };
       })(),
       (e) => {
@@ -119,9 +130,6 @@ export const rssService = {
     );
   },
 
-  /**
-   * RSS/Atom形式の全ソースからフィードを取得
-   */
   fetchAllSources: (): ResultAsync<FetchResult[], never> => {
     return ResultAsync.fromPromise(
       prisma.source.findMany({
@@ -143,7 +151,12 @@ export const rssService = {
               result.match(
                 (fetchResult) => {
                   logger.info(
-                    { sourceId: source.id, saved: fetchResult.savedCount, skipped: fetchResult.skippedCount },
+                    {
+                      sourceId: source.id,
+                      saved: fetchResult.savedCount,
+                      skipped: fetchResult.skippedCount,
+                      invalid: fetchResult.invalidCount,
+                    },
                     "Feed fetch completed",
                   );
                   results.push(fetchResult);
@@ -155,6 +168,7 @@ export const rssService = {
                     sourceName: source.name,
                     savedCount: 0,
                     skippedCount: 0,
+                    invalidCount: 0,
                     error: error.message,
                   });
                 },

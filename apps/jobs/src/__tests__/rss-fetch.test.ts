@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { prisma } from "@curio/database";
 import { FeedFetchError } from "../rss-fetch/errors.js";
+import { FeedItemSchema, FeedSchema } from "../rss-fetch/schema.js";
 
 const mockParseURL = vi.fn();
 
@@ -16,10 +17,85 @@ vi.mock("rss-parser", () => {
 // モック後にインポート
 const { rssService } = await import("../rss-fetch/rss.service.js");
 
+describe("FeedItemSchema", () => {
+  it("有効なフィードアイテムを検証できる", () => {
+    const validItem = {
+      title: "Test Article",
+      link: "https://example.com/article",
+      guid: "item-1",
+      content: "Content",
+      contentSnippet: "Snippet",
+      pubDate: "Mon, 01 Jan 2024 00:00:00 GMT",
+      isoDate: "2024-01-01T00:00:00Z",
+    };
+
+    const result = FeedItemSchema.safeParse(validItem);
+    expect(result.success).toBe(true);
+  });
+
+  it("titleがないアイテムは無効", () => {
+    const invalidItem = {
+      link: "https://example.com/article",
+    };
+
+    const result = FeedItemSchema.safeParse(invalidItem);
+    expect(result.success).toBe(false);
+  });
+
+  it("linkがないアイテムは無効", () => {
+    const invalidItem = {
+      title: "Test Article",
+    };
+
+    const result = FeedItemSchema.safeParse(invalidItem);
+    expect(result.success).toBe(false);
+  });
+
+  it("linkがURL形式でないアイテムは無効", () => {
+    const invalidItem = {
+      title: "Test Article",
+      link: "not-a-url",
+    };
+
+    const result = FeedItemSchema.safeParse(invalidItem);
+    expect(result.success).toBe(false);
+  });
+
+  it("オプショナルフィールドがなくても有効", () => {
+    const minimalItem = {
+      title: "Test Article",
+      link: "https://example.com/article",
+    };
+
+    const result = FeedItemSchema.safeParse(minimalItem);
+    expect(result.success).toBe(true);
+  });
+});
+
+describe("FeedSchema", () => {
+  it("有効なフィードを検証できる", () => {
+    const validFeed = {
+      items: [
+        { title: "Article 1", link: "https://example.com/1" },
+        { title: "Article 2", link: "https://example.com/2" },
+      ],
+    };
+
+    const result = FeedSchema.safeParse(validFeed);
+    expect(result.success).toBe(true);
+  });
+
+  it("itemsが空でも有効", () => {
+    const emptyFeed = { items: [] };
+
+    const result = FeedSchema.safeParse(emptyFeed);
+    expect(result.success).toBe(true);
+  });
+});
+
 describe("rssService", () => {
   describe("saveArticles", () => {
     it("記事を正常に保存できる", async () => {
-      // ソースを作成
       const source = await prisma.source.create({
         data: {
           type: "rss",
@@ -30,17 +106,17 @@ describe("rssService", () => {
 
       const items = [
         {
-          guid: "item-1",
-          link: "https://example.com/article-1",
           title: "Test Article 1",
+          link: "https://example.com/article-1",
+          guid: "item-1",
           content: "Content 1",
           contentSnippet: "Snippet 1",
           isoDate: "2024-01-01T00:00:00Z",
         },
         {
-          guid: "item-2",
-          link: "https://example.com/article-2",
           title: "Test Article 2",
+          link: "https://example.com/article-2",
+          guid: "item-2",
           content: "Content 2",
           contentSnippet: "Snippet 2",
           pubDate: "Mon, 01 Jan 2024 00:00:00 GMT",
@@ -53,9 +129,9 @@ describe("rssService", () => {
       result.map((fetchResult) => {
         expect(fetchResult.savedCount).toBe(2);
         expect(fetchResult.skippedCount).toBe(0);
+        expect(fetchResult.invalidCount).toBe(0);
       });
 
-      // DBに保存されたことを確認
       const articles = await prisma.article.findMany({
         where: { sourceId: source.id },
         orderBy: { title: "asc" },
@@ -76,7 +152,6 @@ describe("rssService", () => {
         },
       });
 
-      // 既存の記事を作成
       await prisma.article.create({
         data: {
           sourceId: source.id,
@@ -88,45 +163,14 @@ describe("rssService", () => {
 
       const items = [
         {
-          guid: "new-item",
-          link: "https://example.com/new",
           title: "New Article",
+          link: "https://example.com/new",
+          guid: "new-item",
         },
         {
-          guid: "duplicate-item",
-          link: "https://example.com/existing", // 重複URL
           title: "Duplicate Article",
-        },
-      ];
-
-      const result = await rssService.saveArticles(source.id, source.name, items);
-
-      expect(result.isOk()).toBe(true);
-      result.map((fetchResult) => {
-        expect(fetchResult.savedCount).toBe(1);
-        expect(fetchResult.skippedCount).toBe(1);
-      });
-    });
-
-    it("リンクがないアイテムはスキップされる", async () => {
-      const source = await prisma.source.create({
-        data: {
-          type: "rss",
-          name: "Test Feed",
-          url: "https://example.com/feed.xml",
-        },
-      });
-
-      const items = [
-        {
-          guid: "no-link-item",
-          title: "No Link Article",
-          // linkがない
-        },
-        {
-          guid: "with-link-item",
-          link: "https://example.com/with-link",
-          title: "With Link Article",
+          link: "https://example.com/existing",
+          guid: "duplicate-item",
         },
       ];
 
@@ -148,7 +192,6 @@ describe("rssService", () => {
         },
       });
 
-      // 既存の記事を作成
       await prisma.article.create({
         data: {
           sourceId: source.id,
@@ -160,9 +203,9 @@ describe("rssService", () => {
 
       const items = [
         {
-          guid: "same-guid", // 同じexternalId
-          link: "https://example.com/new-url", // 異なるURL
           title: "New Article with Same GUID",
+          link: "https://example.com/new-url",
+          guid: "same-guid",
         },
       ];
 
@@ -193,9 +236,9 @@ describe("rssService", () => {
       mockParseURL.mockResolvedValueOnce({
         items: [
           {
-            guid: "item-1",
-            link: "https://example.com/article-1",
             title: "Test Article 1",
+            link: "https://example.com/article-1",
+            guid: "item-1",
             contentSnippet: "Snippet 1",
             isoDate: "2024-01-01T00:00:00Z",
           },
@@ -207,6 +250,42 @@ describe("rssService", () => {
       expect(result.isOk()).toBe(true);
       result.map((fetchResult) => {
         expect(fetchResult.savedCount).toBe(1);
+        expect(fetchResult.invalidCount).toBe(0);
+      });
+    });
+
+    it("無効なアイテムはスキップされる", async () => {
+      const source = await prisma.source.create({
+        data: {
+          type: "rss",
+          name: "Test Feed",
+          url: "https://example.com/feed.xml",
+        },
+      });
+
+      mockParseURL.mockResolvedValueOnce({
+        items: [
+          {
+            title: "Valid Article",
+            link: "https://example.com/valid",
+          },
+          {
+            // titleがない - 無効
+            link: "https://example.com/no-title",
+          },
+          {
+            title: "No Link Article",
+            // linkがない - 無効
+          },
+        ],
+      });
+
+      const result = await rssService.fetchAndSaveArticles(source);
+
+      expect(result.isOk()).toBe(true);
+      result.map((fetchResult) => {
+        expect(fetchResult.savedCount).toBe(1);
+        expect(fetchResult.invalidCount).toBe(2);
       });
     });
 
@@ -232,7 +311,6 @@ describe("rssService", () => {
 
   describe("fetchAllSources", () => {
     it("RSS/Atom以外のソースは取得しない", async () => {
-      // 異なるタイプのソースを作成
       await prisma.source.create({
         data: {
           type: "twitter",

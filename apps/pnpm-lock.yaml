@@ -99,6 +99,9 @@ importers:
       rss-parser:
         specifier: ^3.13.0
         version: 3.13.0
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
     devDependencies:
       '@dotenvx/dotenvx':
         specifier: ^1.51.4

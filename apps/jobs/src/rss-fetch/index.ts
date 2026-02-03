@@ -20,6 +20,7 @@ async function main(): Promise<void> {
     (results) => {
       const totalSaved = results.reduce((sum, r) => sum + r.savedCount, 0);
       const totalSkipped = results.reduce((sum, r) => sum + r.skippedCount, 0);
+      const totalInvalid = results.reduce((sum, r) => sum + r.invalidCount, 0);
       const errors = results.filter((r) => r.error);
 
       logger.info(
@@ -28,6 +29,7 @@ async function main(): Promise<void> {
           sourcesProcessed: results.length,
           totalArticlesSaved: totalSaved,
           totalArticlesSkipped: totalSkipped,
+          totalArticlesInvalid: totalInvalid,
           errorCount: errors.length,
         },
         "RSS fetch job completed",
