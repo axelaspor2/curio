@@ -73,38 +73,53 @@ export const rssService = {
     items: FeedItem[],
     invalidCount: number = 0,
   ): ResultAsync<FetchResult, FeedParseError> => {
-    const parsePublishedAt = (item: FeedItem): Date | null =>
-      item.isoDate ? new Date(item.isoDate) : item.pubDate ? new Date(item.pubDate) : null;
+    const parsePublishedAt = (item: FeedItem): Date | null => {
+      const dateStr = item.isoDate ?? item.pubDate;
+      if (!dateStr) return null;
+      const date = new Date(dateStr);
+      // 無効な日付の場合はnullを返し、他の記事の保存を継続させる
+      return Number.isNaN(date.getTime()) ? null : date;
+    };
 
     const saveItem = async (item: FeedItem): Promise<{ saved: boolean; skipped: boolean }> => {
       const externalId = item.guid ?? null;
 
-      // 同一ソース内でguidが一致、または全体でURLが一致する記事は重複とみなす
-      // guidはソース間で衝突する可能性があるため、sourceIdと組み合わせて検索
-      const existing = await prisma.article.findFirst({
-        where: {
-          OR: [...(externalId ? [{ sourceId, externalId }] : []), { url: item.link }],
-        },
+      // URLで既存の記事を検索（URLは全体で一意であるべき）
+      const existingByUrl = await prisma.article.findFirst({
+        where: { url: item.link },
       });
 
-      if (existing) {
+      if (existingByUrl) {
         return { saved: false, skipped: true };
       }
 
-      await prisma.article.create({
-        data: {
-          sourceId,
-          externalId,
-          title: item.title,
-          content: item.content ?? null,
-          summary: item.contentSnippet ?? null,
-          url: item.link,
-          imageUrl: item.enclosure?.url ?? null,
-          publishedAt: parsePublishedAt(item),
-        },
-      });
+      try {
+        await prisma.article.create({
+          data: {
+            sourceId,
+            externalId,
+            title: item.title,
+            content: item.content ?? null,
+            summary: item.contentSnippet ?? null,
+            url: item.link,
+            imageUrl: item.enclosure?.url ?? null,
+            publishedAt: parsePublishedAt(item),
+          },
+        });
 
-      return { saved: true, skipped: false };
+        return { saved: true, skipped: false };
+      } catch (error) {
+        // ユニーク制約違反（競合状態で別のジョブが先に挿入した場合）は「スキップ」として扱う
+        // Prisma error code P2002 = Unique constraint failed
+        if (
+          error instanceof Error &&
+          "code" in error &&
+          (error as { code: string }).code === "P2002"
+        ) {
+          return { saved: false, skipped: true };
+        }
+        throw error;
+      }
     };
 
     return ResultAsync.fromPromise(
