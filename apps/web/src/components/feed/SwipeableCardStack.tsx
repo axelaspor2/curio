@@ -13,6 +13,10 @@ const SWIPE_THRESHOLD = 100;
 const ROTATION_FACTOR = 12;
 // スワイプ完了時のカード移動距離（px）- 画面外に確実に移動させる
 const EXIT_DISTANCE = 500;
+// ドラッグ開始判定の閾値（px）- この距離を超えるまでドラッグと判定しない
+const DRAG_START_THRESHOLD = 10;
+// 水平/垂直判定の角度閾値（度）- この角度より水平ならスワイプ、垂直ならスクロール
+const DIRECTION_LOCK_ANGLE = 30;
 
 export interface SwipeableCardStackProps {
   articles: Article[];
@@ -23,7 +27,9 @@ export interface SwipeableCardStackProps {
 export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCardStackProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [history, setHistory] = useState<{ article: Article; type: InteractionType }[]>([]);
+  const [isDraggingHorizontal, setIsDraggingHorizontal] = useState(false);
   const dragEndTimeRef = useRef(0);
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
 
   const x = useMotionValue(0);
   const controls = useAnimation();
@@ -65,9 +71,56 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
     [controls, handleSwipeComplete],
   );
 
+  const handleDragStart = useCallback(
+    (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      dragStartRef.current = { x: info.point.x, y: info.point.y };
+      setIsDraggingHorizontal(false);
+    },
+    [],
+  );
+
+  const handleDrag = useCallback(
+    (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      if (!dragStartRef.current) return;
+
+      const deltaX = Math.abs(info.offset.x);
+      const deltaY = Math.abs(info.offset.y);
+      const distance = Math.sqrt(deltaX ** 2 + deltaY ** 2);
+
+      // 一定距離を超えたら方向を判定
+      if (distance > DRAG_START_THRESHOLD && !isDraggingHorizontal) {
+        const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+        // 水平方向（角度が閾値より小さい）ならスワイプモード
+        if (angle < DIRECTION_LOCK_ANGLE) {
+          setIsDraggingHorizontal(true);
+        }
+      }
+
+      // 垂直方向のドラッグは位置をリセット（スクロールに任せる）
+      if (!isDraggingHorizontal && distance > DRAG_START_THRESHOLD) {
+        x.set(0);
+      }
+    },
+    [isDraggingHorizontal, x],
+  );
+
   const handleDragEnd = useCallback(
     (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       dragEndTimeRef.current = Date.now();
+      dragStartRef.current = null;
+
+      // 水平ドラッグでない場合は何もしない
+      if (!isDraggingHorizontal) {
+        setIsDraggingHorizontal(false);
+        controls.start({
+          x: 0,
+          rotate: 0,
+          transition: { type: "spring", stiffness: 300, damping: 25 },
+        });
+        return;
+      }
+
+      setIsDraggingHorizontal(false);
       const swipeThreshold = SWIPE_THRESHOLD;
       const velocity = info.velocity.x;
 
@@ -83,7 +136,7 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
         });
       }
     },
-    [animateSwipe, controls],
+    [animateSwipe, controls, isDraggingHorizontal],
   );
 
   const handleTap = useCallback(() => {
@@ -158,13 +211,17 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
             className={cn(
               "relative w-full max-w-sm h-[480px] sm:h-[520px]",
               "cursor-grab active:cursor-grabbing",
-              "touch-manipulation",
+              // 垂直スクロールを優先しつつ、水平スワイプも許可
+              "touch-pan-y",
             )}
             style={{ x, rotate, opacity }}
             animate={controls}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.7}
+            dragDirectionLock
+            onDragStart={handleDragStart}
+            onDrag={handleDrag}
             onDragEnd={handleDragEnd}
             onTap={handleTap}
             whileTap={{ scale: 0.98 }}

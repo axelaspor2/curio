@@ -99,8 +99,10 @@ export const rssService = {
             sourceId,
             externalId,
             title: item.title,
-            content: item.content ?? null,
-            summary: item.contentSnippet ?? null,
+            // contentはarticle-fetchジョブで全文スクレイピングして保存する
+            content: null,
+            // RSSのcontentSnippetまたはcontentをsummaryとして保存
+            summary: item.contentSnippet ?? item.content ?? null,
             url: item.link,
             imageUrl: item.enclosure?.url ?? null,
             publishedAt: parsePublishedAt(item),
