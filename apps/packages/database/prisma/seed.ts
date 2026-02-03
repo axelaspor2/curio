@@ -28,6 +28,7 @@ const SEED_DATA = {
   sources: [
     { type: "rss", name: "Hacker News", url: "https://news.ycombinator.com/rss" },
     { type: "rss", name: "TechCrunch", url: "https://techcrunch.com/feed/" },
+    { type: "atom", name: "Zenn", url: "https://zenn.dev/feed" },
   ],
   categories: [
     {

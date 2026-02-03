@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/router-cli": "^1.151.0",
     "@tanstack/router-devtools": "^1.151.0",
     "@tanstack/router-plugin": "^1.151.0",
     "@types/node": "^22.0.0",
