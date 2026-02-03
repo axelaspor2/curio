@@ -144,6 +144,8 @@ dmypy.json
 # User-specific files
 .terraform*
 .Terraform*
+.tfvars
+*.tfvars.json
 
 
 tmp*
