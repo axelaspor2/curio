@@ -76,8 +76,8 @@ jobs:
         working-directory: apps
 
       - name: Generate TanStack Router route tree
-        run: npx tsr generate
-        working-directory: apps/web
+        run: pnpm --filter @curio/web exec tsr generate
+        working-directory: apps
 
       - name: Build Web
         run: pnpm --filter @curio/web build
