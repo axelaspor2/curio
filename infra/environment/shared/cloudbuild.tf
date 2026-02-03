@@ -113,3 +113,23 @@ resource "google_cloudbuild_trigger" "terraform_apply" {
     "_TF_DIR" = each.value
   }
 }
+
+# Deploy Trigger (Push to Main)
+resource "google_cloudbuild_trigger" "curio_deploy" {
+  name     = "curio-deploy"
+  location = var.region
+
+  repository_event_config {
+    repository = google_cloudbuildv2_repository.main.id
+    push {
+      branch = "^main$"
+    }
+  }
+
+  filename        = "cloudbuild.yaml"
+  service_account = google_service_account.cloudbuild.id
+
+  approval_config {
+    approval_required = true
+  }
+}
