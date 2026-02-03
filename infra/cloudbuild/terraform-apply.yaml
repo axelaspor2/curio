@@ -1,5 +1,5 @@
-# Terraform Plan Pipeline (PR Preview)
-# Trigger: Pull Request to main branch
+# Terraform Apply Pipeline (Generic)
+# Trigger: Push to main branch
 # https://cloud.google.com/build/docs/build-config-file-schema
 
 substitutions:
@@ -34,7 +34,14 @@ steps:
     name: "hashicorp/terraform:${_TF_VERSION}"
     dir: "${_TF_DIR}"
     entrypoint: "terraform"
-    args: ["plan", "-no-color", "-lock=false", "-input=false"]
+    args: ["plan", "-no-color", "-lock=false", "-input=false", "-out=tfplan"]
     waitFor: ["terraform-validate"]
 
-timeout: "600s"
+  - id: "terraform-apply"
+    name: "hashicorp/terraform:${_TF_VERSION}"
+    dir: "${_TF_DIR}"
+    entrypoint: "terraform"
+    args: ["apply", "-auto-approve", "-input=false", "tfplan"]
+    waitFor: ["terraform-plan"]
+
+timeout: "1200s"

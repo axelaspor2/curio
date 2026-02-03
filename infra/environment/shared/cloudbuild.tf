@@ -59,9 +59,18 @@ resource "google_cloudbuildv2_repository" "main" {
 #--------------------------------
 # Cloud Build Triggers
 #--------------------------------
-# PR用: planのみ実行（マージ前の確認用）
+locals {
+  environments = {
+    shared = "infra/environment/shared"
+    dev    = "infra/environment/dev"
+  }
+}
+
+# Plan Triggers (PR)
 resource "google_cloudbuild_trigger" "terraform_plan" {
-  name     = "terraform-plan"
+  for_each = local.environments
+
+  name     = "terraform-plan-${each.key}"
   location = var.region
 
   repository_event_config {
@@ -73,11 +82,17 @@ resource "google_cloudbuild_trigger" "terraform_plan" {
 
   filename        = "infra/cloudbuild/terraform-plan.yaml"
   service_account = google_service_account.cloudbuild.id
+
+  substitutions = {
+    "_TF_DIR" = each.value
+  }
 }
 
-# main push用: plan + apply実行
-resource "google_cloudbuild_trigger" "terraform_cicd" {
-  name     = "terraform-apply"
+# Apply Triggers (Push to Main)
+resource "google_cloudbuild_trigger" "terraform_apply" {
+  for_each = local.environments
+
+  name     = "terraform-apply-${each.key}"
   location = var.region
 
   repository_event_config {
@@ -87,6 +102,10 @@ resource "google_cloudbuild_trigger" "terraform_cicd" {
     }
   }
 
-  filename        = "infra/cloudbuild/terraform-cicd.yaml"
+  filename        = "infra/cloudbuild/terraform-apply.yaml"
   service_account = google_service_account.cloudbuild.id
+
+  substitutions = {
+    "_TF_DIR" = each.value
+  }
 }
