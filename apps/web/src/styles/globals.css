@@ -115,9 +115,21 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html, body, #root {
+    /* Chrome の Pull-to-Refresh を完全に無効化 */
+    overscroll-behavior: none;
+    overflow: hidden;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    /* タッチ操作でのバウンススクロールを防止 */
+    -webkit-overflow-scrolling: auto;
+  }
   body {
     @apply bg-background text-foreground antialiased;
     font-family: "Zen Kaku Gothic New", "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    position: fixed;
+    width: 100%;
   }
 }
 
@@ -181,6 +193,11 @@
 /* Touch feedback */
 .touch-manipulation {
   touch-action: manipulation;
+}
+
+/* 垂直スクロールを許可しつつ、水平方向はJSで制御 */
+.touch-pan-y {
+  touch-action: pan-y;
 }
 
 /* Safe area for mobile */
