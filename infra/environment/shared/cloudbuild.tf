@@ -9,6 +9,7 @@ resource "google_service_account" "cloudbuild" {
 resource "google_project_iam_member" "cloudbuild" {
   for_each = toset([
     "roles/cloudbuild.builds.builder",
+    "roles/cloudbuild.connectionAdmin",
     "roles/run.admin",
     "roles/artifactregistry.admin",
     "roles/serviceusage.serviceUsageViewer",
