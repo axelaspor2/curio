@@ -31,7 +31,11 @@ const SEED_DATA = {
     { type: "rss", name: "はてなブックマーク IT", url: "https://b.hatena.ne.jp/hotentry/it.rss" },
     { type: "atom", name: "Publickey", url: "https://www.publickey1.jp/atom.xml" },
     { type: "rss", name: "GIGAZINE", url: "https://gigazine.net/news/rss_2.0/" },
+    { type: "rss", name: "Hacker News", url: "https://hnrss.org/frontpage" },
+    { type: "rss", name: "TechCrunch", url: "https://techcrunch.com/feed/" },
   ],
+  // テストユーザーの初期カテゴリ嗜好
+  initialCategoryPreferences: ["tech", "ai-ml", "web-dev"],
   // AIの分類で使用するカテゴリと一致させる (gemini-client.ts CATEGORY_SLUGS)
   categories: [
     {
@@ -163,6 +167,32 @@ async function main(): Promise<void> {
       create: categoryData,
     });
     console.log(`✅ Category: ${category.name}`);
+  }
+
+  // Set initial category preferences for test users
+  const testUser = await prisma.user.findFirst({
+    where: { email: "test@curio.dev" },
+  });
+
+  if (testUser) {
+    for (const slug of SEED_DATA.initialCategoryPreferences) {
+      const category = await prisma.category.findUnique({ where: { slug } });
+      if (category) {
+        await prisma.userCategoryPreference.upsert({
+          where: {
+            userId_categoryId: { userId: testUser.id, categoryId: category.id },
+          },
+          create: {
+            userId: testUser.id,
+            categoryId: category.id,
+            preferenceScore: 0.7,
+            isInitialSelection: true,
+          },
+          update: {},
+        });
+        console.log(`✅ Category preference: ${slug} for ${testUser.email}`);
+      }
+    }
   }
 
   console.log("\n🎉 Seed completed!");
