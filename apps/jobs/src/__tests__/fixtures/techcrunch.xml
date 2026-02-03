@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>TechCrunch</title>
+	<atom:link href="https://techcrunch.com/feed/" rel="self" type="application/rss+xml" />
+	<link>https://techcrunch.com/</link>
+	<description>Startup and Technology News</description>
+	<lastBuildDate>Tue, 03 Feb 2026 01:18:23 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=6.9</generator>
+
+<image>
+	<url>https://techcrunch.com/wp-content/uploads/2015/02/cropped-cropped-favicon-gradient.png?w=32</url>
+	<title>TechCrunch</title>
+	<link>https://techcrunch.com/</link>
+	<width>32</width>
+	<height>32</height>
+</image> 
+	<item>
+		<title>Fintech CEO and Forbes 30 Under 30 alum has been charged for alleged fraud</title>
+		<link>https://techcrunch.com/2026/02/02/fintech-ceo-and-forbes-30-under-30-alum-has-been-charged-for-alleged-fraud/</link>
+		
+		<dc:creator><![CDATA[Lucas Ropek]]></dc:creator>
+		<pubDate>Tue, 03 Feb 2026 00:16:14 +0000</pubDate>
+				<category><![CDATA[Fintech]]></category>
+		<category><![CDATA[Kalder]]></category>
+		<category><![CDATA[securities fraud]]></category>
+		<category><![CDATA[Startups]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088830</guid>
+
+					<description><![CDATA[The startup CEO says she plans to publicly address the charges this week. ]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Waymo raises $16B to scale robotaxi fleet internationally</title>
+		<link>https://techcrunch.com/2026/02/02/waymo-raises-16-billion-round-to-scale-robotaxi-fleet-london-tokyo/</link>
+		
+		<dc:creator><![CDATA[Kirsten Korosec]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 23:04:33 +0000</pubDate>
+				<category><![CDATA[Transportation]]></category>
+		<category><![CDATA[Alphabet]]></category>
+		<category><![CDATA[driverless cars]]></category>
+		<category><![CDATA[robotaxi]]></category>
+		<category><![CDATA[Waymo]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088954</guid>
+
+					<description><![CDATA[Waymo said the funds will be used to fuel its growth, which has accelerated over the past year and doesn't appear to be slowing. ]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Elon Musk&#8217;s SpaceX officially acquires Elon Musk&#8217;s xAI, with plan to build data centers in space</title>
+		<link>https://techcrunch.com/2026/02/02/elon-musk-spacex-acquires-xai-data-centers-space-merger/</link>
+		
+		<dc:creator><![CDATA[Sean O'Kane]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 22:21:57 +0000</pubDate>
+				<category><![CDATA[AI]]></category>
+		<category><![CDATA[Space]]></category>
+		<category><![CDATA[Elon Musk]]></category>
+		<category><![CDATA[SpaceX]]></category>
+		<category><![CDATA[xAI]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088937</guid>
+
+					<description><![CDATA[The merger creates the world's most valuable private company and paves the way for Musk to try and prove out the usefulness of space-based data centers.]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>China is leading the fight against hidden car door handles</title>
+		<link>https://techcrunch.com/2026/02/02/china-is-leading-the-fight-against-hidden-car-door-handles/</link>
+		
+		<dc:creator><![CDATA[Kirsten Korosec]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 21:55:38 +0000</pubDate>
+				<category><![CDATA[Transportation]]></category>
+		<category><![CDATA[China]]></category>
+		<category><![CDATA[EVs]]></category>
+		<category><![CDATA[Safety]]></category>
+		<category><![CDATA[Tesla]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088714</guid>
+
+					<description><![CDATA[Under new safety rules published Monday by China's Ministry of Industry and Information Technology, cars sold in the country must have mechanical releases on their door handles. The new rules, which go in effect January 1, 2027, will prohibit the hidden, electronically actuated door handles popularized by Tesla — and now found on numerous other electric vehicles in China.]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Adobe Animate is shutting down as company focuses on AI</title>
+		<link>https://techcrunch.com/2026/02/02/adobe-animate-is-shutting-down-as-company-focuses-on-ai/</link>
+		
+		<dc:creator><![CDATA[Sarah Perez]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 21:15:03 +0000</pubDate>
+				<category><![CDATA[Apps]]></category>
+		<category><![CDATA[Enterprise]]></category>
+		<category><![CDATA[Adobe]]></category>
+		<category><![CDATA[adobe animate]]></category>
+		<category><![CDATA[AI]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088890</guid>
+
+					<description><![CDATA[Adobe Animate will be discontinued on March 1, 2026, as Adobe shifts its focus to AI. ]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Two Stanford students launch $2M startup accelerator for students nationwide</title>
+		<link>https://techcrunch.com/2026/02/02/two-stanford-students-launch-2m-startup-accelerator-for-students-nationwide/</link>
+		
+		<dc:creator><![CDATA[Dominic-Madori Davis]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 20:39:59 +0000</pubDate>
+				<category><![CDATA[Startups]]></category>
+		<category><![CDATA[Venture]]></category>
+		<category><![CDATA[gen z]]></category>
+		<category><![CDATA[stanford]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088677</guid>
+
+					<description><![CDATA["Breakthrough’s purpose is to fill in the funding and opportunity gap that exists in many of these ecosystems because students have historically lacked access to capital and the networks required to launch their entrepreneurial pursuits," co-founder Roman Scott said.]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>What Snowflake’s deal with OpenAI tells us about the enterprise AI race</title>
+		<link>https://techcrunch.com/2026/02/02/what-snowflakes-deal-with-openai-tells-us-about-the-enterprise-ai-race/</link>
+		
+		<dc:creator><![CDATA[Rebecca Szkutak]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 19:09:44 +0000</pubDate>
+				<category><![CDATA[AI]]></category>
+		<category><![CDATA[Enterprise]]></category>
+		<category><![CDATA[TC]]></category>
+		<category><![CDATA[Analysis]]></category>
+		<category><![CDATA[Anthropic]]></category>
+		<category><![CDATA[artificial intelligence]]></category>
+		<category><![CDATA[OpenAI]]></category>
+		<category><![CDATA[ServiceNow]]></category>
+		<category><![CDATA[Snowflake]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088754</guid>
+
+					<description><![CDATA[Snowflake is the latest enterprise to sign multi-year deals with multiple AI companies in what could be a sign to come of a future trend. ]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Firefox will soon let you block all of its generative AI features</title>
+		<link>https://techcrunch.com/2026/02/02/firefox-will-soon-let-you-block-all-of-its-generative-ai-features/</link>
+		
+		<dc:creator><![CDATA[Aisha Malik]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 18:34:45 +0000</pubDate>
+				<category><![CDATA[AI]]></category>
+		<category><![CDATA[Apps]]></category>
+		<category><![CDATA[Enterprise]]></category>
+		<category><![CDATA[Firefox]]></category>
+		<category><![CDATA[Generative AI]]></category>
+		<category><![CDATA[Mozilla]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088758</guid>
+
+					<description><![CDATA[Starting with Firefox 148 arriving later this month, users will find a new AI controls section within the desktop browser settings. ]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Grubhub waives delivery and service fees on restaurant orders over $50</title>
+		<link>https://techcrunch.com/2026/02/02/grubhub-waives-delivery-service-fees-orders-over-50/</link>
+		
+		<dc:creator><![CDATA[Lauren Forristal]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 18:22:43 +0000</pubDate>
+				<category><![CDATA[Apps]]></category>
+		<category><![CDATA[food delivery]]></category>
+		<category><![CDATA[grubhub]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088729</guid>
+
+					<description><![CDATA[In a bold move to close the gap with rivals, Grubhub is waiving delivery and service fees on restaurant orders over $50.]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>OpenAI launches new macOS app for agentic coding</title>
+		<link>https://techcrunch.com/2026/02/02/openai-launches-new-macos-app-for-agentic-coding/</link>
+		
+		<dc:creator><![CDATA[Russell Brandom]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 18:19:31 +0000</pubDate>
+				<category><![CDATA[AI]]></category>
+		<category><![CDATA[agentic coding]]></category>
+		<category><![CDATA[codex]]></category>
+		<category><![CDATA[Codex app]]></category>
+		<category><![CDATA[OpenAI]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088770</guid>
+
+					<description><![CDATA[OpenAI has released a new macOS app for Codex, integrating many of the agentic coding practices that have become popular since Codex launched last year.]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Notepad++ says Chinese government hackers hijacked its software updates for months</title>
+		<link>https://techcrunch.com/2026/02/02/notepad-says-chinese-government-hackers-hijacked-its-software-updates-for-months/</link>
+		
+		<dc:creator><![CDATA[Zack Whittaker]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 18:09:34 +0000</pubDate>
+				<category><![CDATA[Security]]></category>
+		<category><![CDATA[China]]></category>
+		<category><![CDATA[cybersecurity]]></category>
+		<category><![CDATA[Notepad++]]></category>
+		<category><![CDATA[open source]]></category>
+		<category><![CDATA[SolarWinds]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088724</guid>
+
+					<description><![CDATA[The developer of the popular text editor Notepad++ said hackers associated with the Chinese government hijacked its software update mechanism to deliver tainted software to users for months.]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Ring brings its &#8216;Search Party&#8217; feature for finding lost dogs to non-Ring camera owners</title>
+		<link>https://techcrunch.com/2026/02/02/ring-brings-its-search-party-feature-for-finding-lost-dogs-to-non-ring-camera-owners/</link>
+		
+		<dc:creator><![CDATA[Sarah Perez]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 15:33:45 +0000</pubDate>
+				<category><![CDATA[Hardware]]></category>
+		<category><![CDATA[AI]]></category>
+		<category><![CDATA[Amazon]]></category>
+		<category><![CDATA[Pets]]></category>
+		<category><![CDATA[Ring]]></category>
+		<category><![CDATA[Ring cameras]]></category>
+		<category><![CDATA[search party]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088706</guid>
+
+					<description><![CDATA[Ring's Search Party feature for finding lost dogs is now available across the U.S. — even if you don't own a Ring camera.]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Carbon Robotics built an AI model that detects and identifies plants </title>
+		<link>https://techcrunch.com/2026/02/02/carbon-robotics-built-an-ai-model-that-detects-and-identifies-plants/</link>
+		
+		<dc:creator><![CDATA[Rebecca Szkutak]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 15:00:00 +0000</pubDate>
+				<category><![CDATA[AI]]></category>
+		<category><![CDATA[Robotics]]></category>
+		<category><![CDATA[Startups]]></category>
+		<category><![CDATA[AgTech]]></category>
+		<category><![CDATA[artificial intelligence]]></category>
+		<category><![CDATA[carbon robotics]]></category>
+		<category><![CDATA[large language models]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088288</guid>
+
+					<description><![CDATA[Carbon Robotics' Large Plant Model will allow farmers to kill new types of weeds without having to retrain the machines. ]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Coalition demands federal Grok ban over nonconsensual sexual content</title>
+		<link>https://techcrunch.com/2026/02/02/coalition-demands-federal-grok-ban-over-nonconsensual-sexual-content/</link>
+		
+		<dc:creator><![CDATA[Rebecca Bellan]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 15:00:00 +0000</pubDate>
+				<category><![CDATA[AI]]></category>
+		<category><![CDATA[Government & Policy]]></category>
+		<category><![CDATA[Exclusive]]></category>
+		<category><![CDATA[Grok]]></category>
+		<category><![CDATA[OMB]]></category>
+		<category><![CDATA[xAI]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088503</guid>
+
+					<description><![CDATA[Nonprofits urge the U.S. government to suspend Grok in federal agencies after the xAI chatbot generated thousands of nonconsensual sexual images, raising national security and child safety concerns.]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>UpScrolled&#8217;s founder says the social network has zoomed past 2.5M users</title>
+		<link>https://techcrunch.com/2026/02/02/upscrolleds-founder-says-the-social-network-has-zoomed-past-2-5m-users/</link>
+		
+		<dc:creator><![CDATA[Ivan Mehta]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 14:29:22 +0000</pubDate>
+				<category><![CDATA[Social]]></category>
+		<category><![CDATA[content moderation]]></category>
+		<category><![CDATA[social network]]></category>
+		<category><![CDATA[TikTok]]></category>
+		<category><![CDATA[upscrolled]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088670</guid>
+
+					<description><![CDATA[Upscrolled founder said that the social network was launched six years ago and had 150,000 users until January.]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Linq raises $20M to enable AI assistants to live within messaging apps</title>
+		<link>https://techcrunch.com/2026/02/02/linq-raises-20m-to-enable-ai-assistants-to-live-within-messaging-apps/</link>
+		
+		<dc:creator><![CDATA[Ram Iyer]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 14:16:13 +0000</pubDate>
+				<category><![CDATA[AI]]></category>
+		<category><![CDATA[Enterprise]]></category>
+		<category><![CDATA[AI assistants]]></category>
+		<category><![CDATA[Linq]]></category>
+		<category><![CDATA[Mucker Capital]]></category>
+		<category><![CDATA[poke.com]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088487</guid>
+
+					<description><![CDATA[Linq offers an API that lets  companies offer their AI assistants via iMessage, RCS, and SMS. ]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>These AI notetaking devices can help you record and transcribe your meetings</title>
+		<link>https://techcrunch.com/2026/02/02/ai-notetaker-hardware-devices-pins-pendants-record-transcribe/</link>
+		
+		<dc:creator><![CDATA[Ivan Mehta]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 08:00:00 +0000</pubDate>
+				<category><![CDATA[AI]]></category>
+		<category><![CDATA[Gadgets]]></category>
+		<category><![CDATA[AI notetakers]]></category>
+		<category><![CDATA[evergreen]]></category>
+		<category><![CDATA[evergreens]]></category>
+		<category><![CDATA[meeting notes]]></category>
+		<category><![CDATA[plaud]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088174</guid>
+
+					<description><![CDATA[These physical notetakers transcribe audio and give users summaries and action items of meetings using AI. Some even offer live translation.]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>TikTok says its services are restored after the outage</title>
+		<link>https://techcrunch.com/2026/02/01/tiktok-says-its-services-are-restored-after-the-outage/</link>
+		
+		<dc:creator><![CDATA[Ivan Mehta]]></dc:creator>
+		<pubDate>Mon, 02 Feb 2026 06:38:29 +0000</pubDate>
+				<category><![CDATA[Apps]]></category>
+		<category><![CDATA[social media]]></category>
+		<category><![CDATA[TikTok]]></category>
+		<category><![CDATA[tiktok deal]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088665</guid>
+
+					<description><![CDATA[TikTok says it finally solved all issues related to outages caused by last week's U.S. snowstorm.]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>AI layoffs or ‘AI-washing’?</title>
+		<link>https://techcrunch.com/2026/02/01/ai-layoffs-or-ai-washing/</link>
+		
+		<dc:creator><![CDATA[Anthony Ha]]></dc:creator>
+		<pubDate>Sun, 01 Feb 2026 22:15:53 +0000</pubDate>
+				<category><![CDATA[AI]]></category>
+		<category><![CDATA[ai washing]]></category>
+		<category><![CDATA[forrester]]></category>
+		<category><![CDATA[In Brief]]></category>
+		<category><![CDATA[Layoffs]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088565</guid>
+
+					<description><![CDATA[How many of the companies with recent layoffs are just using AI as an excuse? ]]></description>
+		
+		
+		
+			</item>
+		<item>
+		<title>Why Tether&#8217;s CEO is everywhere right now</title>
+		<link>https://techcrunch.com/2026/02/01/why-tethers-ceo-is-everywhere-right-now/</link>
+		
+		<dc:creator><![CDATA[Connie Loizos]]></dc:creator>
+		<pubDate>Sun, 01 Feb 2026 20:32:21 +0000</pubDate>
+				<category><![CDATA[AI]]></category>
+		<category><![CDATA[Commerce]]></category>
+		<category><![CDATA[Crypto]]></category>
+		<category><![CDATA[TC]]></category>
+		<category><![CDATA[Circle]]></category>
+		<category><![CDATA[CLARITY ACT]]></category>
+		<category><![CDATA[Exclusive]]></category>
+		<category><![CDATA[Paolo Ardoino]]></category>
+		<category><![CDATA[tether]]></category>
+		<guid isPermaLink="false">https://techcrunch.com/?p=3088553</guid>
+
+					<description><![CDATA[For years, Tether's CEO avoided the United States, watching from offshore as regulators circled and prosecutors investigated. Those days are over.]]></description>
+		
+		
+		
+			</item>
+	</channel>
+</rss>
