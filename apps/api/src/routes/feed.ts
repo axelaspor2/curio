@@ -38,11 +38,17 @@ export const feedRouter = new OpenAPIHono<AppEnv>().openapi(getFeedRoute, async 
   }
 
   const query = c.req.valid("query");
-  const result = await feedService.getFeed(user.id, {
-    limit: query.limit,
-    cursor: query.cursor,
-    categoryId: query.categoryId,
-  });
+
+  // パーソナライズドフィード: cursorがない初回リクエストかつカテゴリ指定なしの場合
+  // ページネーション時やカテゴリ絞り込み時は通常フィードを使用
+  const result =
+    !query.cursor && !query.categoryId
+      ? await feedService.getPersonalizedFeed(user.id, { limit: query.limit })
+      : await feedService.getFeed(user.id, {
+          limit: query.limit,
+          cursor: query.cursor,
+          categoryId: query.categoryId,
+        });
 
   return result.match(
     (feed) => c.json(feed, 200),

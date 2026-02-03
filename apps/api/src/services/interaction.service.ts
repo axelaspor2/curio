@@ -3,6 +3,7 @@ import { errAsync, type ResultAsync } from "neverthrow";
 import { NotFoundError, type PrismaError } from "../lib/errors.js";
 import { fromPrisma } from "../lib/from-promise.js";
 import type { InteractionType } from "../schemas/interactions.js";
+import { preferenceService } from "./preference.service.js";
 
 type InteractionResult = {
   id: string;
@@ -48,6 +49,13 @@ export const interactionService = {
             createdAt: true,
           },
         }),
-      );
+      ).andTee(async () => {
+        // カテゴリ嗜好スコアを非同期で更新（エラーは無視）
+        try {
+          await preferenceService.updateFromInteraction(userId, articleId, type, readingTimeSec);
+        } catch (e) {
+          console.error("Failed to update preference score:", e);
+        }
+      });
     }),
 };
