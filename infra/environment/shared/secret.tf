@@ -16,6 +16,15 @@ locals {
         "service-${var.project_number}@gcp-sa-cloudbuild.iam.gserviceaccount.com",
       ]
     }
+
+    # Dev
+    "CURIO_AUTH_SECRET_DEV" = {
+      accessors = []
+    }
+    "CURIO_DATABASE_URL_DEV" = {
+      accessors = []
+    }
+
   }
 
   # シークレット×アクセサーの組み合わせをフラット化
