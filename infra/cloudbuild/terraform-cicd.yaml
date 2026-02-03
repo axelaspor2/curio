@@ -10,7 +10,7 @@
 
 substitutions:
   _TF_VERSION: "1.14"
-  _TF_DIR: "infra/env/shared"
+  _TF_DIR: "infra/environment/shared"
 
 options:
   logging: CLOUD_LOGGING_ONLY
