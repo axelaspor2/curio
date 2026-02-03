@@ -36,7 +36,10 @@ async function main(): Promise<void> {
       );
 
       if (errors.length > 0) {
-        logger.warn({ errors: errors.map((e) => ({ source: e.sourceName, error: e.error })) }, "Some sources failed");
+        logger.warn(
+          { errors: errors.map((e) => ({ source: e.sourceName, error: e.error })) },
+          "Some sources failed",
+        );
       }
 
       // 全ソースが失敗した場合のみ終了コード1

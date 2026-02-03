@@ -4,12 +4,13 @@
  * 登録されたソースからRSS/Atomフィードを取得し、
  * Zodスキーマで検証した後、DBに保存する。
  */
-import Parser from "rss-parser";
+
 import { prisma, type Source } from "@curio/database";
-import { ResultAsync, okAsync } from "neverthrow";
-import { FeedFetchError, FeedParseError, type JobError } from "./errors.js";
+import { okAsync, ResultAsync } from "neverthrow";
+import Parser from "rss-parser";
 import { logger } from "../lib/logger.js";
-import { FeedItemSchema, type FeedItem } from "./schema.js";
+import { FeedFetchError, FeedParseError, type JobError } from "./errors.js";
+import { type FeedItem, FeedItemSchema } from "./schema.js";
 
 const parser = new Parser({
   timeout: 30000,
@@ -38,23 +39,21 @@ export const rssService = {
     }).andThen((feed) => {
       const rawItems = feed.items ?? [];
 
-      const { validItems, invalidCount } = rawItems.reduce<{
-        validItems: FeedItem[];
-        invalidCount: number;
-      }>(
-        (acc, rawItem) => {
-          const result = FeedItemSchema.safeParse(rawItem);
-          if (result.success) {
-            return { ...acc, validItems: [...acc.validItems, result.data] };
-          }
+      const validItems: FeedItem[] = [];
+      let invalidCount = 0;
+
+      for (const rawItem of rawItems) {
+        const result = FeedItemSchema.safeParse(rawItem);
+        if (result.success) {
+          validItems.push(result.data);
+        } else {
           logger.debug(
             { sourceId: source.id, errors: result.error.issues, rawItem },
             "Invalid feed item skipped",
           );
-          return { ...acc, invalidCount: acc.invalidCount + 1 };
-        },
-        { validItems: [], invalidCount: 0 },
-      );
+          invalidCount++;
+        }
+      }
 
       if (invalidCount > 0) {
         logger.warn(
@@ -77,9 +76,7 @@ export const rssService = {
     const parsePublishedAt = (item: FeedItem): Date | null =>
       item.isoDate ? new Date(item.isoDate) : item.pubDate ? new Date(item.pubDate) : null;
 
-    const saveItem = async (
-      item: FeedItem,
-    ): Promise<{ saved: boolean; skipped: boolean }> => {
+    const saveItem = async (item: FeedItem): Promise<{ saved: boolean; skipped: boolean }> => {
       const externalId = item.guid ?? null;
 
       // 同一ソース内でguidが一致、または全体でURLが一致する記事は重複とみなす
@@ -179,14 +176,11 @@ export const rssService = {
       .orElse(() => okAsync([] as Source[]))
       .andThen((sources) =>
         ResultAsync.fromPromise(
-          sources.reduce<Promise<FetchResult[]>>(
-            async (accPromise, source) => {
-              const acc = await accPromise;
-              const result = await processSource(source);
-              return [...acc, result];
-            },
-            Promise.resolve([]),
-          ),
+          sources.reduce<Promise<FetchResult[]>>(async (accPromise, source) => {
+            const acc = await accPromise;
+            const result = await processSource(source);
+            return [...acc, result];
+          }, Promise.resolve([])),
           () => [] as FetchResult[],
         ),
       )

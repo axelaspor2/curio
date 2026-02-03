@@ -4,10 +4,12 @@
  * rss-parserをモックせず、本物のXMLをパースして
  * スキーマが実データに適合することを確認する。
  */
-import { describe, expect, it } from "vitest";
+
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+
 import Parser from "rss-parser";
+import { describe, expect, it } from "vitest";
 import { FeedItemSchema } from "../rss-fetch/schema.js";
 
 describe("フィクスチャによるスキーマ検証", () => {

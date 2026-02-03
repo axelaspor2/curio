@@ -1,5 +1,5 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
 import { prisma } from "@curio/database";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FeedFetchError } from "../rss-fetch/errors.js";
 import { FeedItemSchema, FeedSchema } from "../rss-fetch/schema.js";
 
@@ -126,11 +126,11 @@ describe("rssService", () => {
       const result = await rssService.saveArticles(source.id, source.name, items);
 
       expect(result.isOk()).toBe(true);
-      result.map((fetchResult) => {
-        expect(fetchResult.savedCount).toBe(2);
-        expect(fetchResult.skippedCount).toBe(0);
-        expect(fetchResult.invalidCount).toBe(0);
-      });
+      if (result.isOk()) {
+        expect(result.value.savedCount).toBe(2);
+        expect(result.value.skippedCount).toBe(0);
+        expect(result.value.invalidCount).toBe(0);
+      }
 
       const articles = await prisma.article.findMany({
         where: { sourceId: source.id },
@@ -177,10 +177,10 @@ describe("rssService", () => {
       const result = await rssService.saveArticles(source.id, source.name, items);
 
       expect(result.isOk()).toBe(true);
-      result.map((fetchResult) => {
-        expect(fetchResult.savedCount).toBe(1);
-        expect(fetchResult.skippedCount).toBe(1);
-      });
+      if (result.isOk()) {
+        expect(result.value.savedCount).toBe(1);
+        expect(result.value.skippedCount).toBe(1);
+      }
     });
 
     it("externalIdで重複チェックされる", async () => {
@@ -212,10 +212,10 @@ describe("rssService", () => {
       const result = await rssService.saveArticles(source.id, source.name, items);
 
       expect(result.isOk()).toBe(true);
-      result.map((fetchResult) => {
-        expect(fetchResult.savedCount).toBe(0);
-        expect(fetchResult.skippedCount).toBe(1);
-      });
+      if (result.isOk()) {
+        expect(result.value.savedCount).toBe(0);
+        expect(result.value.skippedCount).toBe(1);
+      }
     });
   });
 
@@ -248,10 +248,10 @@ describe("rssService", () => {
       const result = await rssService.fetchAndSaveArticles(source);
 
       expect(result.isOk()).toBe(true);
-      result.map((fetchResult) => {
-        expect(fetchResult.savedCount).toBe(1);
-        expect(fetchResult.invalidCount).toBe(0);
-      });
+      if (result.isOk()) {
+        expect(result.value.savedCount).toBe(1);
+        expect(result.value.invalidCount).toBe(0);
+      }
     });
 
     it("無効なアイテムはスキップされる", async () => {
@@ -283,10 +283,10 @@ describe("rssService", () => {
       const result = await rssService.fetchAndSaveArticles(source);
 
       expect(result.isOk()).toBe(true);
-      result.map((fetchResult) => {
-        expect(fetchResult.savedCount).toBe(1);
-        expect(fetchResult.invalidCount).toBe(2);
-      });
+      if (result.isOk()) {
+        expect(result.value.savedCount).toBe(1);
+        expect(result.value.invalidCount).toBe(2);
+      }
     });
 
     it("フィード取得エラー時にFeedFetchErrorを返す", async () => {
@@ -330,9 +330,9 @@ describe("rssService", () => {
       const result = await rssService.fetchAllSources();
 
       expect(result.isOk()).toBe(true);
-      result.map((results) => {
-        expect(results).toHaveLength(0);
-      });
+      if (result.isOk()) {
+        expect(result.value).toHaveLength(0);
+      }
     });
   });
 });
