@@ -17,6 +17,8 @@ resource "google_project_iam_member" "cloudbuild" {
     "roles/iam.serviceAccountUser",
     "roles/resourcemanager.projectIamAdmin",
     "roles/secretmanager.admin",
+    "roles/storage.objectViewer",
+    "roles/cloudsql.client",
   ])
 
   project = var.project_id
@@ -111,5 +113,35 @@ resource "google_cloudbuild_trigger" "terraform_apply" {
 
   substitutions = {
     "_TF_DIR" = each.value
+  }
+}
+
+# Deploy Trigger (Push to Main)
+resource "google_cloudbuild_trigger" "app_deploy" {
+  name     = "app-deploy"
+  location = var.region
+
+  repository_event_config {
+    repository = google_cloudbuildv2_repository.main.id
+    push {
+      branch = "^main$"
+    }
+  }
+
+  included_files = ["apps/**", "infra/cloudbuild/app-deploy.yaml"]
+
+  substitutions = {
+    _REGION            = var.region
+    _ARTIFACT_REGISTRY = google_artifact_registry_repository.curio.repository_id
+    # TODO: Cloud SQL instance name should be dynamic
+    _CLOUD_SQL_INSTANCE = "team-aizawa:asia-northeast1:curio-prod"
+  }
+
+  filename = "infra/cloudbuild/app-deploy.yaml"
+
+  service_account = google_service_account.cloudbuild.id
+
+  approval_config {
+    approval_required = true
   }
 }

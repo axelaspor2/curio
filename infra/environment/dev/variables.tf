@@ -25,16 +25,3 @@ variable "zone" {
   description = "The zone"
   type        = string
 }
-
-# ---------------------------------------------
-# GitHub Variables
-# ---------------------------------------------
-variable "github_organization" {
-  description = "The GitHub organization name"
-  type        = string
-}
-
-variable "github_repository_name" {
-  description = "The GitHub repository name"
-  type        = string
-}

@@ -4,7 +4,3 @@ project_name   = "Team-Aizawa"
 project_number = "386684379642"
 region         = "asia-northeast1"
 zone           = "asia-northeast1-a"
-
-# --- GitHub設定 ---
-github_organization    = "axelaspor2"
-github_repository_name = "curio"
