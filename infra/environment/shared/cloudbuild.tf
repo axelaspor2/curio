@@ -13,13 +13,14 @@ resource "google_project_iam_member" "cloudbuild" {
     "roles/run.admin",
     "roles/artifactregistry.admin",
     "roles/serviceusage.serviceUsageViewer",
-    "roles/iam.serviceAccountViewer",
+    "roles/iam.serviceAccountAdmin",
     "roles/iam.serviceAccountUser",
     "roles/resourcemanager.projectIamAdmin",
     "roles/secretmanager.admin",
     "roles/storage.objectViewer",
     "roles/cloudsql.client",
     "roles/iap.admin",
+    "roles/cloudscheduler.admin",
   ])
 
   project = var.project_id
