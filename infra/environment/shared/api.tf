@@ -8,12 +8,12 @@ locals {
     "compute.googleapis.com",              # Compute Engine
     "iam.googleapis.com",                  # IAM
     # "iap.googleapis.com" - 既に有効化済み、手動管理
-    "logging.googleapis.com",              # Cloud Logging
-    "monitoring.googleapis.com",           # Cloud Monitoring
-    "run.googleapis.com",                  # Cloud Run
-    "secretmanager.googleapis.com",        # Secret Manager
-    "servicenetworking.googleapis.com",    # Service Networking
-    "sqladmin.googleapis.com",             # Cloud SQL Admin
+    "logging.googleapis.com",           # Cloud Logging
+    "monitoring.googleapis.com",        # Cloud Monitoring
+    "run.googleapis.com",               # Cloud Run
+    "secretmanager.googleapis.com",     # Secret Manager
+    "servicenetworking.googleapis.com", # Service Networking
+    "sqladmin.googleapis.com",          # Cloud SQL Admin
   ]
 }
 
