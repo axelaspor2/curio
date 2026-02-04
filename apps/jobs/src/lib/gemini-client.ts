@@ -1,7 +1,7 @@
 /**
  * Gemini APIクライアント
  *
- * @google/genai SDK経由でGemini 2.0 Flash（LLM）とtext-embedding-004（Embeddings）を呼び出す。
+ * @google/genai SDK経由でGemini 3 Flash（LLM）とtext-embedding-004（Embeddings）を呼び出す。
  * Vertex AIモード（ADC認証）で動作。
  */
 import { GoogleGenAI } from "@google/genai";
@@ -15,7 +15,8 @@ import {
 
 const getConfig = () => {
   const projectId = process.env.GOOGLE_CLOUD_PROJECT;
-  const location = process.env.GOOGLE_CLOUD_LOCATION ?? "us-central1";
+  // Gemini 3モデルはglobalロケーションでのみ利用可能
+  const location = process.env.VERTEX_AI_LOCATION ?? "global";
 
   if (!projectId) {
     throw new Error("GOOGLE_CLOUD_PROJECT environment variable is required");
@@ -96,7 +97,7 @@ export const geminiClient = {
         const prompt = buildClassificationPrompt(content.title, content.content);
 
         const response = await client.models.generateContent({
-          model: "gemini-2.0-flash",
+          model: "gemini-3-flash",
           contents: prompt,
         });
 
