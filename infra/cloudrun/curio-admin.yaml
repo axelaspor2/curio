@@ -2,9 +2,6 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: curio-admin
-  annotations:
-    run.googleapis.com/launch-stage: BETA
-    run.googleapis.com/iap-enabled: "true"
 spec:
   template:
     metadata:
@@ -38,6 +35,16 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: CURIO_ADMIN_SESSION_SECRET
+                  key: latest
+            - name: ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: curio-admin-email
+                  key: latest
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: curio-admin-password
                   key: latest
   traffic:
     - percent: 100
