@@ -121,6 +121,10 @@ resource "google_cloudbuild_trigger" "terraform_apply" {
 #--------------------------------
 locals {
   app_triggers = {
+    admin = {
+      included_files = ["apps/admin/**", "apps/packages/database/**", "infra/cloudrun/curio-admin.yaml"]
+      filename       = "cloudbuild/admin.cloudbuild.yaml"
+    }
     api = {
       included_files = ["apps/api/**", "apps/shared/**", "packages/**", "infra/cloudrun/curio-api.yaml", "infra/cloudrun/curio-db-migrate.yaml"]
       filename       = "cloudbuild/api.cloudbuild.yaml"

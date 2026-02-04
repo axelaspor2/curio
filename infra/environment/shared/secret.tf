@@ -25,6 +25,12 @@ locals {
       accessors = []
     }
 
+    # Admin
+    "CURIO_ADMIN_SESSION_SECRET" = {
+      accessors = [
+        "${var.project_number}-compute@developer.gserviceaccount.com",
+      ]
+    }
   }
 
   # シークレット×アクセサーの組み合わせをフラット化
