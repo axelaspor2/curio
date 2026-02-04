@@ -49,6 +49,9 @@ importers:
       '@adminjs/prisma':
         specifier: ^5.0.4
         version: 5.0.4(@prisma/client@packages+database)(adminjs@7.8.17(@types/babel__core@7.20.5)(@types/react@19.2.8))
+      '@babel/plugin-syntax-import-assertions':
+        specifier: ^7.28.6
+        version: 7.28.6(@babel/core@7.28.6)
       '@curio/database':
         specifier: workspace:*
         version: link:../packages/database
@@ -8546,24 +8549,24 @@ snapshots:
 
   '@types/babel__core@7.20.5':
     dependencies:
-      '@babel/parser': 7.28.6
-      '@babel/types': 7.28.6
+      '@babel/parser': 7.29.0
+      '@babel/types': 7.29.0
       '@types/babel__generator': 7.27.0
       '@types/babel__template': 7.4.4
       '@types/babel__traverse': 7.28.0
 
   '@types/babel__generator@7.27.0':
     dependencies:
-      '@babel/types': 7.28.6
+      '@babel/types': 7.29.0
 
   '@types/babel__template@7.4.4':
     dependencies:
-      '@babel/parser': 7.28.6
-      '@babel/types': 7.28.6
+      '@babel/parser': 7.29.0
+      '@babel/types': 7.29.0
 
   '@types/babel__traverse@7.28.0':
     dependencies:
-      '@babel/types': 7.28.6
+      '@babel/types': 7.29.0
 
   '@types/body-parser@1.19.6':
     dependencies:

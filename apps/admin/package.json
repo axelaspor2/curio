@@ -14,6 +14,7 @@
   "dependencies": {
     "@adminjs/express": "^6.1.0",
     "@adminjs/prisma": "^5.0.4",
+    "@babel/plugin-syntax-import-assertions": "^7.28.6",
     "@curio/database": "workspace:*",
     "@prisma/client": "workspace:@curio/database@*",
     "adminjs": "^7.8.0",
