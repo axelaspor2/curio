@@ -5,8 +5,8 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  // GitHub Pages deployment: use /curio/ as base path
-  base: process.env.GITHUB_ACTIONS ? "/curio/" : "/",
+  // カスタムドメイン (app.curio.axelaspor2.dev) を使用するためルートパス
+  base: "/",
   plugins: [TanStackRouterVite({ autoCodeSplitting: true }), react(), tailwindcss()],
   resolve: {
     alias: {
