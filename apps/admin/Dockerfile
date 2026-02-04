@@ -14,7 +14,7 @@ RUN corepack enable && corepack prepare pnpm@10.28.0 --activate
 WORKDIR /app
 
 # Copy workspace configuration files
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY .npmrc pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 
 # Copy package.json files for dependency resolution
 COPY packages/database/package.json ./packages/database/
@@ -49,7 +49,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Copy workspace configuration
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
+COPY .npmrc pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 
 # Copy package.json files
 COPY packages/database/package.json ./packages/database/
