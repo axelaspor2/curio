@@ -23,6 +23,40 @@ const MODEL_ID_FIELDS: Record<string, string> = {
   UserCategoryPreference: "userId",
 };
 
+// Nullable フィールドのマッピング（Prisma schema から抽出）
+// Prisma 7 の DMMF には isRequired が含まれないため、手動でマッピング
+const NULLABLE_FIELDS: Record<string, Set<string>> = {
+  User: new Set(["avatarUrl"]),
+  Source: new Set([]),
+  Category: new Set(["description"]),
+  Article: new Set(["externalId", "content", "summary", "imageUrl", "publishedAt", "embedding"]),
+  ArticleCategory: new Set(["confidence"]),
+  Interaction: new Set(["readingTimeSec"]),
+  UserInterestVector: new Set(["interestEmbedding", "lastCalculatedAt"]),
+  UserCategoryPreference: new Set([]),
+  Session: new Set(["ipAddress", "userAgent"]),
+  Account: new Set([
+    "accessToken",
+    "refreshToken",
+    "idToken",
+    "accessTokenExpiresAt",
+    "refreshTokenExpiresAt",
+    "scope",
+    "password",
+  ]),
+  Verification: new Set([]),
+};
+
+/**
+ * フィールドが必須かどうかを判定する
+ * NULLABLE_FIELDS に含まれるフィールドは必須ではない
+ */
+function isFieldRequired(modelName: string, fieldName: string): boolean {
+  const nullableFields = NULLABLE_FIELDS[modelName];
+  if (!nullableFields) return true; // 未知のモデルはデフォルト必須
+  return !nullableFields.has(fieldName);
+}
+
 interface DMMFField {
   name: string;
   kind: string;
@@ -63,9 +97,9 @@ function patchModel(model: DMMFModel): DMMFModel {
       patchedField.isId = true;
     }
 
-    // 必須フィールドのデフォルト設定
-    if (patchedField.kind === "scalar" && patchedField.isRequired === undefined) {
-      patchedField.isRequired = true;
+    // 必須フィールドの判定（NULLABLE_FIELDS マッピングを使用）
+    if (patchedField.kind === "scalar") {
+      patchedField.isRequired = isFieldRequired(model.name, patchedField.name);
     }
 
     // その他のデフォルト値を設定
