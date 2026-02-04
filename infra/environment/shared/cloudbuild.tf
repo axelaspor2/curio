@@ -19,6 +19,7 @@ resource "google_project_iam_member" "cloudbuild" {
     "roles/secretmanager.admin",
     "roles/storage.objectViewer",
     "roles/cloudsql.client",
+    "roles/iap.admin",
   ])
 
   project = var.project_id
