@@ -116,9 +116,38 @@ resource "google_cloudbuild_trigger" "terraform_apply" {
   }
 }
 
-# Deploy Trigger (Push to Main)
+#--------------------------------
+# Application Deploy Triggers
+#--------------------------------
+locals {
+  app_triggers = {
+    api = {
+      included_files = ["apps/api/**", "apps/shared/**", "packages/**", "infra/cloudrun/curio-api.yaml", "infra/cloudrun/curio-db-migrate.yaml"]
+      filename       = "cloudbuild/api.cloudbuild.yaml"
+    }
+    rss-fetch = {
+      included_files = ["apps/jobs/src/rss-fetch/**", "apps/jobs/src/lib/**", "apps/jobs/rss-fetch.Dockerfile", "apps/shared/**", "packages/**", "infra/cloudrun/curio-rss-fetch.yaml"]
+      filename       = "cloudbuild/rss-fetch.cloudbuild.yaml"
+    }
+    article-fetch = {
+      included_files = ["apps/jobs/src/article-fetch/**", "apps/jobs/src/lib/**", "apps/jobs/article-fetch.Dockerfile", "apps/shared/**", "packages/**", "infra/cloudrun/curio-article-fetch.yaml"]
+      filename       = "cloudbuild/article-fetch.cloudbuild.yaml"
+    }
+    article-enrichment = {
+      included_files = ["apps/jobs/src/article-enrichment/**", "apps/jobs/src/lib/**", "apps/jobs/article-enrichment.Dockerfile", "apps/shared/**", "packages/**", "infra/cloudrun/curio-article-enrichment.yaml"]
+      filename       = "cloudbuild/article-enrichment.cloudbuild.yaml"
+    }
+    interest-vector = {
+      included_files = ["apps/jobs/src/interest-vector/**", "apps/jobs/src/lib/**", "apps/jobs/interest-vector.Dockerfile", "apps/shared/**", "packages/**", "infra/cloudrun/curio-interest-vector.yaml"]
+      filename       = "cloudbuild/interest-vector.cloudbuild.yaml"
+    }
+  }
+}
+
 resource "google_cloudbuild_trigger" "app_deploy" {
-  name     = "app-deploy"
+  for_each = local.app_triggers
+
+  name     = "deploy-${each.key}"
   location = var.region
 
   repository_event_config {
@@ -128,20 +157,7 @@ resource "google_cloudbuild_trigger" "app_deploy" {
     }
   }
 
-  included_files = ["apps/**", "infra/cloudbuild/app-deploy.yaml"]
-
-  substitutions = {
-    _REGION            = var.region
-    _ARTIFACT_REGISTRY = google_artifact_registry_repository.curio.repository_id
-    # TODO: Cloud SQL instance name should be dynamic
-    _CLOUD_SQL_INSTANCE = "team-aizawa:asia-northeast1:curio-prod"
-  }
-
-  filename = "infra/cloudbuild/app-deploy.yaml"
-
+  included_files  = each.value.included_files
+  filename        = each.value.filename
   service_account = google_service_account.cloudbuild.id
-
-  approval_config {
-    approval_required = true
-  }
 }

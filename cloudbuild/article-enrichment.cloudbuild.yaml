@@ -1,0 +1,39 @@
+substitutions:
+  _REGION: asia-northeast1
+  _ARTIFACT_REGISTRY: curio
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+steps:
+  - id: 'build'
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--cache-from'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-article-enrichment:latest'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-article-enrichment:${SHORT_SHA}'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-article-enrichment:latest'
+      - '-f'
+      - 'apps/jobs/article-enrichment.Dockerfile'
+      - 'apps'
+
+  - id: 'push'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-article-enrichment']
+    waitFor: ['build']
+
+  - id: 'deploy'
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        export IMAGE=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-article-enrichment:${SHORT_SHA}
+        export PROJECT_ID=${PROJECT_ID}
+        envsubst < infra/cloudrun/curio-article-enrichment.yaml | gcloud run jobs replace - --region=${_REGION}
+    waitFor: ['push']
+
+timeout: 600s

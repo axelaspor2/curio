@@ -1,0 +1,79 @@
+substitutions:
+  _REGION: asia-northeast1
+  _ARTIFACT_REGISTRY: curio
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
+
+steps:
+  # Build (with cache)
+  - id: 'build-api'
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--cache-from'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-api:latest'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-api:${SHORT_SHA}'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-api:latest'
+      - '-f'
+      - 'apps/api/Dockerfile'
+      - 'apps'
+
+  - id: 'build-db-migrate'
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--cache-from'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-db-migrate:latest'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-db-migrate:${SHORT_SHA}'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-db-migrate:latest'
+      - '-f'
+      - 'apps/jobs/db-migrate.Dockerfile'
+      - 'apps'
+
+  # Push
+  - id: 'push-api'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-api']
+    waitFor: ['build-api']
+
+  - id: 'push-db-migrate'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-db-migrate']
+    waitFor: ['build-db-migrate']
+
+  # Deploy DB Migrate & Run
+  - id: 'deploy-db-migrate-job'
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        export IMAGE=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-db-migrate:${SHORT_SHA}
+        envsubst < infra/cloudrun/curio-db-migrate.yaml | gcloud run jobs replace - --region=${_REGION}
+    waitFor: ['push-db-migrate']
+
+  - id: 'run-db-migrate'
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    args: ['run', 'jobs', 'execute', 'curio-db-migrate', '--region', '${_REGION}', '--wait']
+    waitFor: ['deploy-db-migrate-job']
+
+  # Deploy API
+  - id: 'deploy-api'
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        export IMAGE=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-api:${SHORT_SHA}
+        export PROJECT_NUMBER=${PROJECT_NUMBER}
+        envsubst < infra/cloudrun/curio-api.yaml | gcloud run services replace - --region=${_REGION}
+        gcloud run services add-iam-policy-binding curio-api --region=${_REGION} --member="allUsers" --role="roles/run.invoker"
+    waitFor: ['push-api', 'run-db-migrate']
+
+timeout: 1800s
