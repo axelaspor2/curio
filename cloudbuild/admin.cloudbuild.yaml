@@ -39,4 +39,17 @@ steps:
           infra/cloudrun/curio-admin.yaml | gcloud run services replace - --region=${_REGION}
     waitFor: ['push-admin']
 
+  # Grant IAP service account invoker permission
+  - id: 'setup-iap-invoker'
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud run services add-iam-policy-binding curio-admin \
+          --region=${_REGION} \
+          --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-iap.iam.gserviceaccount.com" \
+          --role="roles/run.invoker"
+    waitFor: ['deploy-admin']
+
 timeout: 1800s

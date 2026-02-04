@@ -4,6 +4,7 @@
 
 # IAP サービスエージェントを作成
 # これにより service-{PROJECT_NUMBER}@gcp-sa-iap.iam.gserviceaccount.com が作成される
+# NOTE: iap.googleapis.com API は既に有効化されている前提
 resource "google_project_service_identity" "iap" {
   provider = google-beta
   project  = var.project_id
@@ -14,15 +15,8 @@ resource "google_project_service_identity" "iap" {
 # Cloud Run IAP Settings
 #--------------------------------
 
-# IAP サービスアカウントに Cloud Run Invoker 権限を付与
-# IAP が Cloud Run サービスを呼び出すために必要
-resource "google_cloud_run_service_iam_member" "iap_invoker_admin" {
-  project  = var.project_id
-  location = var.region
-  service  = "curio-admin"
-  role     = "roles/run.invoker"
-  member   = "serviceAccount:${google_project_service_identity.iap.email}"
-}
+# NOTE: Cloud Run サービスへの IAM 設定は、サービスのデプロイ後に
+# Cloud Build (cloudbuild/admin.cloudbuild.yaml) で自動設定されます。
 
 # IAP-secured Web App User ロールを付与
 # Admin パネルへのアクセスを許可するユーザー
