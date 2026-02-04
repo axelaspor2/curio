@@ -28,7 +28,7 @@ steps:
     args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-admin']
     waitFor: ['build-admin']
 
-  # Deploy Admin (IAP handles authentication, no public access)
+  # Deploy Admin (Basic auth in app)
   - id: 'deploy-admin'
     name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
@@ -38,18 +38,5 @@ steps:
         sed -e 's|\$${IMAGE}|${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-admin:${SHORT_SHA}|g' \
           infra/cloudrun/curio-admin.yaml | gcloud run services replace - --region=${_REGION}
     waitFor: ['push-admin']
-
-  # Grant IAP service account invoker permission
-  - id: 'setup-iap-invoker'
-    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        gcloud run services add-iam-policy-binding curio-admin \
-          --region=${_REGION} \
-          --member="serviceAccount:service-${PROJECT_NUMBER}@gcp-sa-iap.iam.gserviceaccount.com" \
-          --role="roles/run.invoker"
-    waitFor: ['deploy-admin']
 
 timeout: 1800s
