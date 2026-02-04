@@ -1,10 +1,14 @@
-import { getModelByName } from "@adminjs/prisma";
 import type { ResourceWithOptions } from "adminjs";
 import { prisma } from "@curio/database";
-// Prisma module for getModelByName - re-exported from @curio/database
-import * as PrismaModule from "@curio/database";
+// Prisma module for getModelByName - generated client module
+import * as PrismaModule from "@curio/database/generated/client";
+import { getPatchedModelByName } from "../lib/prisma-dmmf-patch.js";
 
 const client = prisma;
+const clientModule = PrismaModule;
+
+// パッチ済みモデルを取得するヘルパー
+const getModel = (name: string) => getPatchedModelByName(name, PrismaModule);
 
 /**
  * AdminJS Resources Configuration
@@ -18,7 +22,7 @@ export const resources: ResourceWithOptions[] = [
   // ユーザー管理
   // ============================================================================
   {
-    resource: { model: getModelByName("User", PrismaModule), client },
+    resource: { model: getModel("User"), client, clientModule },
     options: {
       navigation: { name: "ユーザー管理", icon: "User" },
       listProperties: ["id", "email", "name", "emailVerified", "createdAt"],
@@ -27,7 +31,7 @@ export const resources: ResourceWithOptions[] = [
     },
   },
   {
-    resource: { model: getModelByName("Interaction", PrismaModule), client },
+    resource: { model: getModel("Interaction"), client, clientModule },
     options: {
       navigation: { name: "ユーザー管理", icon: "Activity" },
       listProperties: ["id", "userId", "articleId", "type", "readingTimeSec", "createdAt"],
@@ -40,7 +44,7 @@ export const resources: ResourceWithOptions[] = [
     },
   },
   {
-    resource: { model: getModelByName("UserCategoryPreference", PrismaModule), client },
+    resource: { model: getModel("UserCategoryPreference"), client, clientModule },
     options: {
       navigation: { name: "ユーザー管理", icon: "Settings" },
       listProperties: ["userId", "categoryId", "preferenceScore", "isInitialSelection", "updatedAt"],
@@ -49,7 +53,7 @@ export const resources: ResourceWithOptions[] = [
     },
   },
   {
-    resource: { model: getModelByName("UserInterestVector", PrismaModule), client },
+    resource: { model: getModel("UserInterestVector"), client, clientModule },
     options: {
       navigation: { name: "ユーザー管理", icon: "Target" },
       listProperties: ["id", "userId", "lastCalculatedAt", "updatedAt"],
@@ -68,7 +72,7 @@ export const resources: ResourceWithOptions[] = [
   // コンテンツ管理
   // ============================================================================
   {
-    resource: { model: getModelByName("Source", PrismaModule), client },
+    resource: { model: getModel("Source"), client, clientModule },
     options: {
       navigation: { name: "コンテンツ管理", icon: "Database" },
       listProperties: ["id", "name", "type", "url", "createdAt"],
@@ -77,7 +81,7 @@ export const resources: ResourceWithOptions[] = [
     },
   },
   {
-    resource: { model: getModelByName("Category", PrismaModule), client },
+    resource: { model: getModel("Category"), client, clientModule },
     options: {
       navigation: { name: "コンテンツ管理", icon: "Tag" },
       listProperties: ["id", "slug", "name", "displayOrder", "createdAt"],
@@ -86,7 +90,7 @@ export const resources: ResourceWithOptions[] = [
     },
   },
   {
-    resource: { model: getModelByName("Article", PrismaModule), client },
+    resource: { model: getModel("Article"), client, clientModule },
     options: {
       navigation: { name: "コンテンツ管理", icon: "FileText" },
       listProperties: ["id", "title", "sourceId", "publishedAt", "fetchedAt"],
@@ -120,7 +124,7 @@ export const resources: ResourceWithOptions[] = [
     },
   },
   {
-    resource: { model: getModelByName("ArticleCategory", PrismaModule), client },
+    resource: { model: getModel("ArticleCategory"), client, clientModule },
     options: {
       navigation: { name: "コンテンツ管理", icon: "Link" },
       listProperties: ["articleId", "categoryId", "confidence", "createdAt"],
@@ -133,7 +137,7 @@ export const resources: ResourceWithOptions[] = [
   // 認証
   // ============================================================================
   {
-    resource: { model: getModelByName("Session", PrismaModule), client },
+    resource: { model: getModel("Session"), client, clientModule },
     options: {
       navigation: { name: "認証", icon: "Key" },
       listProperties: ["id", "userId", "expiresAt", "ipAddress", "createdAt"],
@@ -145,7 +149,7 @@ export const resources: ResourceWithOptions[] = [
     },
   },
   {
-    resource: { model: getModelByName("Account", PrismaModule), client },
+    resource: { model: getModel("Account"), client, clientModule },
     options: {
       navigation: { name: "認証", icon: "Shield" },
       listProperties: ["id", "userId", "providerId", "accountId", "createdAt"],
@@ -168,7 +172,7 @@ export const resources: ResourceWithOptions[] = [
     },
   },
   {
-    resource: { model: getModelByName("Verification", PrismaModule), client },
+    resource: { model: getModel("Verification"), client, clientModule },
     options: {
       navigation: { name: "認証", icon: "CheckCircle" },
       listProperties: ["id", "identifier", "expiresAt", "createdAt"],
