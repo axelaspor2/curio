@@ -1,0 +1,38 @@
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: curio-article-enrichment
+spec:
+  template:
+    metadata:
+      annotations:
+        run.googleapis.com/cloudsql-instances: team-aizawa:asia-northeast1:curio-prod
+        run.googleapis.com/network-interfaces: '[{"network":"curio","subnetwork":"curio01"}]'
+        run.googleapis.com/vpc-access-egress: private-ranges-only
+    spec:
+      taskCount: 1
+      template:
+        spec:
+          maxRetries: 3
+          timeoutSeconds: 1800
+          serviceAccountName: 386684379642-compute@developer.gserviceaccount.com
+          containers:
+            - image: ${IMAGE}
+              resources:
+                limits:
+                  memory: 1Gi
+                  cpu: "1"
+              env:
+                - name: NODE_ENV
+                  value: production
+                - name: LOG_LEVEL
+                  value: info
+                - name: GOOGLE_CLOUD_PROJECT
+                  value: ${PROJECT_ID}
+                - name: GOOGLE_CLOUD_LOCATION
+                  value: asia-northeast1
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: curio-database-url
+                      key: latest
