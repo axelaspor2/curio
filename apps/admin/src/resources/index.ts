@@ -1,8 +1,8 @@
 import { getModelByName } from "@adminjs/prisma";
 import type { ResourceWithOptions } from "adminjs";
 import { prisma } from "@curio/database";
-// Prisma module for getModelByName (custom output path)
-import * as PrismaModule from "@curio/database/generated/client";
+// Prisma module for getModelByName - re-exported from @curio/database
+import * as PrismaModule from "@curio/database";
 
 const client = prisma;
 
