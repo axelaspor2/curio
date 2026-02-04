@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: curio-admin
   annotations:
+    run.googleapis.com/launch-stage: BETA
     run.googleapis.com/iap-enabled: "true"
 spec:
   template:
