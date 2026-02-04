@@ -75,6 +75,10 @@ jobs:
         run: pnpm --filter @curio/api build
         working-directory: apps
 
+      - name: Build Admin
+        run: pnpm --filter @curio/admin build
+        working-directory: apps
+
       - name: Generate TanStack Router route tree
         run: pnpm --filter @curio/web exec tsr generate
         working-directory: apps
