@@ -53,10 +53,12 @@ const fetchHtml = (url: string): ResultAsync<string, FetchError> => {
 
 /**
  * 単一記事の本文を取得してDBに保存する
+ * currentImageUrlがnullの場合のみ、抽出したOGP画像を保存する
  */
 const fetchAndSaveArticle = async (
   articleId: string,
   url: string,
+  currentImageUrl: string | null,
 ): Promise<{ success: boolean; error?: FetchError }> => {
   const htmlResult = await fetchHtml(url);
 
@@ -70,11 +72,15 @@ const fetchAndSaveArticle = async (
     return { success: false, error: extractResult.error };
   }
 
-  const { textContent } = extractResult.value;
+  const { textContent, ogImage } = extractResult.value;
 
   await prisma.article.update({
     where: { id: articleId },
-    data: { content: textContent },
+    data: {
+      content: textContent,
+      // 既存のimageUrlがnullの場合のみOGP画像を設定
+      ...(currentImageUrl === null && ogImage ? { imageUrl: ogImage } : {}),
+    },
   });
 
   return { success: true };
@@ -94,7 +100,7 @@ export const articleFetchService = {
   fetchPendingArticles: async (): Promise<FetchResult> => {
     const articles = await prisma.article.findMany({
       where: { content: null },
-      select: { id: true, url: true, title: true },
+      select: { id: true, url: true, title: true, imageUrl: true },
       take: BATCH_SIZE,
       orderBy: { createdAt: "desc" },
     });
@@ -109,7 +115,7 @@ export const articleFetchService = {
     for (const article of articles) {
       console.log(`Fetching: ${article.title}`);
 
-      const fetchResult = await fetchAndSaveArticle(article.id, article.url);
+      const fetchResult = await fetchAndSaveArticle(article.id, article.url, article.imageUrl);
 
       if (fetchResult.success) {
         result.successCount++;
