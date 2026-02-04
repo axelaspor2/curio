@@ -1,6 +1,6 @@
-import type { Request, Response, NextFunction } from "express";
-import { logger } from "../lib/logger.js";
+import type { NextFunction, Request, Response } from "express";
 import { config } from "../lib/config.js";
+import { logger } from "../lib/logger.js";
 
 export interface IAPUser {
   email: string;
@@ -21,11 +21,7 @@ declare global {
  * IAP を通過しないリクエストは Cloud Run に到達しないため、
  * ヘッダーの存在確認とユーザー情報の抽出のみ行う。
  */
-export function iapAuthMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
+export function iapAuthMiddleware(req: Request, res: Response, next: NextFunction): void {
   // ヘルスチェックはスキップ
   if (req.path === "/health") {
     next();

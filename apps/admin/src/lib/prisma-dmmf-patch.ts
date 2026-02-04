@@ -144,8 +144,8 @@ function patchModel(model: DMMFModel): DMMFModel {
  */
 export function getPatchedModelByName(
   name: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  clientModule: any
+  // biome-ignore lint/suspicious/noExplicitAny: Prisma モジュールの型は動的
+  clientModule: any,
 ): DMMFModel {
   const dmmf = clientModule?.Prisma?.dmmf?.datamodel;
 
@@ -153,9 +153,7 @@ export function getPatchedModelByName(
     throw new Error("DMMF not found in Prisma module");
   }
 
-  const model = dmmf.models.find(
-    (m: DMMFModel) => m.name === name
-  ) as DMMFModel | undefined;
+  const model = dmmf.models.find((m: DMMFModel) => m.name === name) as DMMFModel | undefined;
 
   if (!model) {
     throw new Error(`Could not find model: "${name}" in Prisma's DMMF!`);

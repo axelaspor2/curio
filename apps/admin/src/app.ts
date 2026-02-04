@@ -1,13 +1,12 @@
-import AdminJS from "adminjs";
 import AdminJSExpress from "@adminjs/express";
 import { Database, Resource } from "@adminjs/prisma";
+import AdminJS from "adminjs";
 import express, { type Express } from "express";
 import session from "express-session";
-
-import { iapAuthMiddleware } from "./middlewares/iap-auth.js";
-import { resources } from "./resources/index.js";
 import { config } from "./lib/config.js";
 import { logger } from "./lib/logger.js";
+import { iapAuthMiddleware } from "./middlewares/iap-auth.js";
+import { resources } from "./resources/index.js";
 
 // Register Prisma adapter
 AdminJS.registerAdapter({ Database, Resource });
@@ -31,7 +30,7 @@ app.use(
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
-  })
+  }),
 );
 
 // Create AdminJS instance
@@ -75,12 +74,12 @@ const router = AdminJSExpress.buildRouter(adminJs);
 app.use(adminJs.options.rootPath, router);
 
 // Root redirect to admin
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
   res.redirect("/admin");
 });
 
 // Health check endpoint
-app.get("/health", (req, res) => {
+app.get("/health", (_req, res) => {
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
