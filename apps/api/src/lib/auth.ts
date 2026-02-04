@@ -39,5 +39,13 @@ export const auth = betterAuth({
       // PostgreSQLのUUID型と一致させるため、UUIDを使用
       generateId: "uuid",
     },
+    // クロスオリジン（GitHub Pages → Cloud Run）でCookieを送信するために必要
+    crossSubDomainCookies: {
+      enabled: true,
+    },
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+    },
   },
 });
