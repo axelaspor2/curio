@@ -38,3 +38,12 @@ variable "github_repository_name" {
   description = "The GitHub repository name"
   type        = string
 }
+
+# ---------------------------------------------
+# IAP Variables
+# ---------------------------------------------
+variable "iap_admin_users" {
+  description = "List of users/groups who can access IAP-protected admin panel (e.g., user:admin@example.com, group:admins@example.com)"
+  type        = list(string)
+  default     = []
+}
