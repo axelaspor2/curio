@@ -2,6 +2,8 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: curio-admin
+  annotations:
+    run.googleapis.com/iap-enabled: "true"
 spec:
   template:
     metadata:
