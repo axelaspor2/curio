@@ -31,9 +31,9 @@ steps:
     args:
       - '-c'
       - |
-        export IMAGE=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-interest-vector:${SHORT_SHA}
-        export PROJECT_ID=${PROJECT_ID}
-        envsubst < infra/cloudrun/curio-interest-vector.yaml | gcloud run jobs replace - --region=${_REGION}
+        sed -e 's|\$${IMAGE}|${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-interest-vector:${SHORT_SHA}|g' \
+            -e 's|\$${PROJECT_ID}|${PROJECT_ID}|g' \
+          infra/cloudrun/curio-interest-vector.yaml | gcloud run jobs replace - --region=${_REGION}
     waitFor: ['push']
 
 timeout: 600s

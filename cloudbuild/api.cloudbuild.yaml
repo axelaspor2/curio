@@ -54,8 +54,8 @@ steps:
     args:
       - '-c'
       - |
-        export IMAGE=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-db-migrate:${SHORT_SHA}
-        envsubst < infra/cloudrun/curio-db-migrate.yaml | gcloud run jobs replace - --region=${_REGION}
+        sed 's|\$${IMAGE}|${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-db-migrate:${SHORT_SHA}|g' \
+          infra/cloudrun/curio-db-migrate.yaml | gcloud run jobs replace - --region=${_REGION}
     waitFor: ['push-db-migrate']
 
   - id: 'run-db-migrate'
@@ -70,9 +70,9 @@ steps:
     args:
       - '-c'
       - |
-        export IMAGE=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-api:${SHORT_SHA}
-        export PROJECT_NUMBER=${PROJECT_NUMBER}
-        envsubst < infra/cloudrun/curio-api.yaml | gcloud run services replace - --region=${_REGION}
+        sed -e 's|\$${IMAGE}|${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-api:${SHORT_SHA}|g' \
+            -e 's|\$${PROJECT_NUMBER}|${PROJECT_NUMBER}|g' \
+          infra/cloudrun/curio-api.yaml | gcloud run services replace - --region=${_REGION}
         gcloud run services add-iam-policy-binding curio-api --region=${_REGION} --member="allUsers" --role="roles/run.invoker"
     waitFor: ['push-api', 'run-db-migrate']
 

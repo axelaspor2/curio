@@ -31,8 +31,8 @@ steps:
     args:
       - '-c'
       - |
-        export IMAGE=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-article-fetch:${SHORT_SHA}
-        envsubst < infra/cloudrun/curio-article-fetch.yaml | gcloud run jobs replace - --region=${_REGION}
+        sed 's|\$${IMAGE}|${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-article-fetch:${SHORT_SHA}|g' \
+          infra/cloudrun/curio-article-fetch.yaml | gcloud run jobs replace - --region=${_REGION}
     waitFor: ['push']
 
 timeout: 600s
