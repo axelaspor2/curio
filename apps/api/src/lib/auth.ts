@@ -39,13 +39,17 @@ export const auth = betterAuth({
       // PostgreSQLのUUID型と一致させるため、UUIDを使用
       generateId: "uuid",
     },
-    // クロスオリジン（GitHub Pages → Cloud Run）でCookieを送信するために必要
-    crossSubDomainCookies: {
-      enabled: true,
-    },
-    defaultCookieAttributes: {
-      sameSite: "none",
-      secure: true,
-    },
+    // 本番環境: サブドメイン間（app.curio.axelaspor2.dev ↔ api.curio.axelaspor2.dev）でCookieを共有
+    // 開発環境: デフォルト設定（localhost）
+    ...(process.env.NODE_ENV === "production" && {
+      crossSubDomainCookies: {
+        enabled: true,
+        domain: ".curio.axelaspor2.dev",
+      },
+      defaultCookieAttributes: {
+        sameSite: "lax",
+        secure: true,
+      },
+    }),
   },
 });

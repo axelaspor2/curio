@@ -27,9 +27,9 @@ spec:
             - name: NODE_ENV
               value: production
             - name: BETTER_AUTH_URL
-              value: https://curio-api-${PROJECT_NUMBER}-an.a.run.app
+              value: https://api.curio.axelaspor2.dev
             - name: CORS_ORIGINS
-              value: https://axelaspor2.github.io
+              value: https://app.curio.axelaspor2.dev
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
