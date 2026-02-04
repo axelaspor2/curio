@@ -25,6 +25,10 @@ locals {
       accessors = []
     }
 
+    # Admin
+    "CURIO_ADMIN_SESSION_SECRET" = {
+      accessors = []
+    }
   }
 
   # シークレット×アクセサーの組み合わせをフラット化

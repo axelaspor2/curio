@@ -7,6 +7,7 @@ locals {
     "cloudscheduler.googleapis.com",       # Cloud Scheduler
     "compute.googleapis.com",              # Compute Engine
     "iam.googleapis.com",                  # IAM
+    "iap.googleapis.com",                  # Identity-Aware Proxy
     "logging.googleapis.com",              # Cloud Logging
     "monitoring.googleapis.com",           # Cloud Monitoring
     "run.googleapis.com",                  # Cloud Run
