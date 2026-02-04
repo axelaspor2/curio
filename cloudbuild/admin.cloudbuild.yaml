@@ -1,0 +1,42 @@
+substitutions:
+  _REGION: asia-northeast1
+  _ARTIFACT_REGISTRY: curio
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
+
+steps:
+  # Build
+  - id: 'build-admin'
+    name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--cache-from'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-admin:latest'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-admin:${SHORT_SHA}'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-admin:latest'
+      - '-f'
+      - 'apps/admin/Dockerfile'
+      - 'apps'
+
+  # Push
+  - id: 'push-admin'
+    name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '--all-tags', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-admin']
+    waitFor: ['build-admin']
+
+  # Deploy Admin (IAP handles authentication, no public access)
+  - id: 'deploy-admin'
+    name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        sed -e 's|\$${IMAGE}|${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY}/curio-admin:${SHORT_SHA}|g' \
+          infra/cloudrun/curio-admin.yaml | gcloud run services replace - --region=${_REGION}
+    waitFor: ['push-admin']
+
+timeout: 1800s
