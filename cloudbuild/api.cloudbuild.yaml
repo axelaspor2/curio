@@ -60,6 +60,7 @@ steps:
 
   - id: 'run-db-migrate'
     name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
     args: ['run', 'jobs', 'execute', 'curio-db-migrate', '--region', '${_REGION}', '--wait']
     waitFor: ['deploy-db-migrate-job']
 
