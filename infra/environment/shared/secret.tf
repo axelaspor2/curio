@@ -27,7 +27,9 @@ locals {
 
     # Admin
     "CURIO_ADMIN_SESSION_SECRET" = {
-      accessors = []
+      accessors = [
+        "${var.project_number}-compute@developer.gserviceaccount.com",
+      ]
     }
   }
 
