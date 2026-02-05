@@ -1,21 +1,50 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { type ReactNode, useEffect } from "react";
-import { useAuth } from "@/hooks";
+import { useAuth, useOnboardingStatus } from "@/hooks";
 
 interface AuthGuardProps {
   children: ReactNode;
+  /** オンボーディングチェックをスキップするか（オンボーディングページ自体で使用） */
+  skipOnboardingCheck?: boolean;
 }
 
-export function AuthGuard({ children }: AuthGuardProps) {
-  const { isLoading, isAuthenticated } = useAuth();
+export function AuthGuard({ children, skipOnboardingCheck = false }: AuthGuardProps) {
+  const { isLoading: authLoading, isAuthenticated } = useAuth();
+  // 認証済みかつオンボーディングチェックが必要な場合のみステータスを取得
+  const { data: onboardingStatus, isLoading: onboardingLoading } = useOnboardingStatus(
+    isAuthenticated && !skipOnboardingCheck,
+  );
   const navigate = useNavigate();
 
+  const isLoading = authLoading || (!skipOnboardingCheck && onboardingLoading);
+
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       navigate({ to: "/login" });
     }
-  }, [isLoading, isAuthenticated, navigate]);
+  }, [authLoading, isAuthenticated, navigate]);
+
+  // オンボーディング未完了の場合はオンボーディングページへリダイレクト
+  useEffect(() => {
+    if (
+      !skipOnboardingCheck &&
+      !authLoading &&
+      !onboardingLoading &&
+      isAuthenticated &&
+      onboardingStatus &&
+      !onboardingStatus.isOnboardingComplete
+    ) {
+      navigate({ to: "/onboarding/categories" });
+    }
+  }, [
+    skipOnboardingCheck,
+    authLoading,
+    onboardingLoading,
+    isAuthenticated,
+    onboardingStatus,
+    navigate,
+  ]);
 
   if (isLoading) {
     return (
@@ -30,6 +59,11 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   // リダイレクト処理中はnullを返す（childrenのフラッシュを防ぐ）
   if (!isAuthenticated) {
+    return null;
+  }
+
+  // オンボーディング未完了の場合もnullを返す
+  if (!skipOnboardingCheck && onboardingStatus && !onboardingStatus.isOnboardingComplete) {
     return null;
   }
 

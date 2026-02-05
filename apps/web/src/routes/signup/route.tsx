@@ -14,7 +14,8 @@ function SignUpPage() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate({ to: "/" });
+      // 新規登録後はオンボーディングページへ
+      navigate({ to: "/onboarding/categories" });
     }
   }, [isLoading, isAuthenticated, navigate]);
 
