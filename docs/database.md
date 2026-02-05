@@ -39,6 +39,8 @@
 | `name`           | TEXT        | 表示名                     | `田中太郎`                             |
 | `avatar_url`     | TEXT        | プロフィール画像URL        | `https://...`                          |
 | `email_verified` | BOOLEAN     | メール認証済みか           | `true`                                 |
+| `daily_article_count` | INTEGER | 1日の記事閲覧数（v2予定）  | `12`                                   |
+| `last_reset_at`  | TIMESTAMPTZ | 日次カウントリセット日時（v2予定） | `2026-01-22T00:00:00Z`           |
 | `created_at`     | TIMESTAMPTZ | 作成日時                   | `2026-01-22T10:00:00Z`                 |
 | `updated_at`     | TIMESTAMPTZ | 更新日時                   | `2026-01-22T10:00:00Z`                 |
 
@@ -129,13 +131,16 @@
 | `external_id` | TEXT         | 外部システムでのID      | `abc123`               |
 | `title`       | TEXT         | 記事タイトル            | `AI の最新動向`        |
 | `content`     | TEXT         | 記事本文                | -                      |
-| `summary`     | TEXT         | LLM 生成の要約          | -                      |
+| `description` | TEXT         | フィードからの説明文（v2予定、ユーザー表示用） | `AIの最新動向について...` |
+| `summary`     | TEXT         | LLM 生成の要約（v2で削除予定） | -                      |
 | `url`         | TEXT         | 記事URL                 | `https://...`          |
 | `image_url`   | TEXT         | OGP 画像URL             | `https://...`          |
 | `embedding`   | vector(768)  | 記事のベクトル表現      | -                      |
 | `published_at`| TIMESTAMPTZ  | 記事の公開日時          | `2026-01-22T10:00:00Z` |
 | `fetched_at`  | TIMESTAMPTZ  | 取得日時                | -                      |
 | `created_at`  | TIMESTAMPTZ  | 作成日時                | -                      |
+
+> **v2変更予定**: `summary`（LLM要約）を削除し、`description`（フィードから取得）をユーザー表示用に使用
 
 **インデックス**:
 
@@ -225,7 +230,12 @@
 | `article_id`      | UUID        | 記事ID             | -      |
 | `type`            | ENUM        | 操作種別           | `LIKE` |
 | `reading_time_sec`| INTEGER     | 閲覧時間（秒）     | `120`  |
+| `article_title`   | TEXT        | 記事タイトル（v2予定、非正規化） | `AI の最新動向` |
+| `article_url`     | TEXT        | 記事URL（v2予定、非正規化） | `https://...` |
+| `category_ids`    | UUID[]      | カテゴリID配列（v2予定、非正規化） | `[uuid1, uuid2]` |
 | `created_at`      | TIMESTAMPTZ | 操作日時           | -      |
+
+> **v2変更予定**: 記事削除後も統計情報を保持するため、`article_title`、`article_url`、`category_ids` を非正規化して保存
 
 **type の種類**:
 
@@ -438,3 +448,61 @@ pnpm prisma generate
 - [ ] pgvector HNSW インデックスが作成される
 - [ ] Better Auth との互換性確認
 - [ ] 基本的な CRUD 操作のテスト
+
+---
+
+## v2 スキーマ変更予定
+
+### 概要
+
+フィード体験改善（6件/回、1日上限30件、サマリー画面）に伴うスキーマ変更。
+
+### 変更内容
+
+#### users テーブル
+
+```prisma
+model User {
+  // 追加
+  dailyArticleCount Int      @default(0) @map("daily_article_count")
+  lastResetAt       DateTime @default(now()) @map("last_reset_at") @db.Timestamptz
+}
+```
+
+#### articles テーブル
+
+```prisma
+model Article {
+  // 追加
+  description String? @db.Text  // フィードのdescription（ユーザー表示用）
+
+  // 削除
+  // summary String? @db.Text  // LLM生成の要約（削除）
+}
+```
+
+#### interactions テーブル
+
+```prisma
+model Interaction {
+  // 追加（記事削除後も統計を保持するための非正規化）
+  articleTitle  String?  @map("article_title") @db.Text
+  articleUrl    String?  @map("article_url") @db.Text
+  categoryIds   String[] @map("category_ids") @db.Uuid
+}
+```
+
+### バッチジョブ
+
+| ジョブ | スケジュール | 説明 |
+|--------|------------|------|
+| `cleanup-articles` | 毎日深夜 | 1ヶ月以上前の記事を削除 |
+| `reset-daily-count` | 毎日0時 | 全ユーザーの dailyArticleCount をリセット |
+
+### API変更
+
+| エンドポイント | 変更内容 |
+|--------------|---------|
+| `GET /api/feed` | limit デフォルト 6、1日上限チェック、残りセット数をレスポンスに追加 |
+| `POST /api/interactions` | 記事情報を非正規化して保存 |
+| `GET /api/stats` | 新規作成（統計取得） |
