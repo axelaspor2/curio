@@ -16,7 +16,8 @@ function LoginPage() {
     if (!isLoading && isAuthenticated) {
       navigate({ to: "/" });
     }
-  }, [isLoading, isAuthenticated, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- navigate reference changes on every render, causing infinite loop
+  }, [isLoading, isAuthenticated]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-12">

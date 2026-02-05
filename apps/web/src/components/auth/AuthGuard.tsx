@@ -15,7 +15,8 @@ export function AuthGuard({ children }: AuthGuardProps) {
     if (!isLoading && !isAuthenticated) {
       navigate({ to: "/login" });
     }
-  }, [isLoading, isAuthenticated, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- navigate reference changes on every render, causing infinite loop
+  }, [isLoading, isAuthenticated]);
 
   if (isLoading) {
     return (
