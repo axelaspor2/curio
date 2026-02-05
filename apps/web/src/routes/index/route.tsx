@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
+import { useCallback } from "react";
 import { AuthGuard } from "@/components/auth";
 import { SwipeableCardStack } from "@/components/feed";
 import { Header, MobileContainer } from "@/components/layout";
 import { FluentEmoji } from "@/components/ui";
-import { useFeedArticles, useInteraction } from "@/hooks";
+import { useInfiniteFeedArticles, useInteraction } from "@/hooks";
 import type { Article, InteractionType } from "@/types/feed";
 
 export const Route = createFileRoute("/")({
@@ -12,8 +13,16 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
-  // 1セッションで消費しやすい量として20件を取得（多すぎると疲労、少なすぎると物足りない）
-  const { articles, isLoading, isError, error } = useFeedArticles({ limit: 20 });
+  const {
+    articles,
+    isLoading,
+    isError,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    exhaustedByThreshold,
+  } = useInfiniteFeedArticles({ limit: 20 });
   const { recordInteraction } = useInteraction();
 
   const handleSwipe = (articleId: string, type: InteractionType) => {
@@ -24,6 +33,12 @@ function HomePage() {
     recordInteraction(article.id, "OPEN");
     window.open(article.url, "_blank");
   };
+
+  const handleNeedMoreArticles = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <AuthGuard>
@@ -72,6 +87,10 @@ function HomePage() {
               articles={articles}
               onSwipe={handleSwipe}
               onCardTap={handleCardTap}
+              onNeedMoreArticles={handleNeedMoreArticles}
+              hasMoreArticles={hasNextPage}
+              isFetchingMore={isFetchingNextPage}
+              exhaustedByThreshold={exhaustedByThreshold}
             />
           )}
         </main>

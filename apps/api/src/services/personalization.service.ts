@@ -7,6 +7,7 @@ import { prisma } from "@curio/database";
 
 const VECTOR_WEIGHT = 0.6;
 const CATEGORY_WEIGHT = 0.4;
+const DEFAULT_MIN_SCORE = 0.4;
 
 export interface PersonalizedArticle {
   id: string;
@@ -18,6 +19,17 @@ export interface PersonalizedArticle {
   sourceId: string;
   sourceName: string;
   similarity: number;
+  finalScore?: number;
+}
+
+export interface VectorSearchResult {
+  articles: PersonalizedArticle[];
+  hasMore: boolean;
+}
+
+export interface VectorSearchCursor {
+  score: number;
+  id: string;
 }
 
 export interface UserPreference {
@@ -72,37 +84,93 @@ export const personalizationService = {
    * ベクトル類似度で記事を検索
    *
    * pgvector HNSWインデックスを使用して高速検索。
+   * スコア閾値（minScore）以上の記事のみ返却。
+   * カーソルベースのページネーション対応。
    */
   searchByVectorSimilarity: async (
     userVector: number[],
     userId: string,
     limit: number,
-  ): Promise<PersonalizedArticle[]> => {
+    options?: {
+      cursor?: VectorSearchCursor;
+      minScore?: number;
+    },
+  ): Promise<VectorSearchResult> => {
+    const minScore = options?.minScore ?? DEFAULT_MIN_SCORE;
+    const cursor = options?.cursor;
+
     // pgvectorは [0.1, 0.2, ...] 形式の文字列を期待する
     const vectorStr = `[${userVector.join(",")}]`;
-    const articles = await prisma.$queryRaw<PersonalizedArticle[]>`
-      SELECT
-        a.id,
-        a.title,
-        a.summary,
-        a.url,
-        a.image_url as "imageUrl",
-        a.published_at as "publishedAt",
-        s.id as "sourceId",
-        s.name as "sourceName",
-        1 - (a.embedding <=> ${vectorStr}::vector) AS similarity
-      FROM articles a
-      JOIN sources s ON a.source_id = s.id
-      WHERE a.embedding IS NOT NULL
-        AND NOT EXISTS (
-          SELECT 1 FROM interactions i
-          WHERE i.article_id = a.id AND i.user_id = ${userId}::uuid
-        )
-      ORDER BY a.embedding <=> ${vectorStr}::vector
-      LIMIT ${limit * 2}
-    `;
 
-    return articles;
+    // hasMoreの判定用に1件多く取得
+    const fetchLimit = limit + 1;
+
+    let articles: PersonalizedArticle[];
+
+    if (cursor) {
+      // カーソルがある場合: スコア+IDで複合ページネーション
+      articles = await prisma.$queryRaw<PersonalizedArticle[]>`
+        SELECT
+          a.id,
+          a.title,
+          a.summary,
+          a.url,
+          a.image_url as "imageUrl",
+          a.published_at as "publishedAt",
+          s.id as "sourceId",
+          s.name as "sourceName",
+          1 - (a.embedding <=> ${vectorStr}::vector) AS similarity
+        FROM articles a
+        JOIN sources s ON a.source_id = s.id
+        WHERE a.embedding IS NOT NULL
+          AND 1 - (a.embedding <=> ${vectorStr}::vector) >= ${minScore}
+          AND NOT EXISTS (
+            SELECT 1 FROM interactions i
+            WHERE i.article_id = a.id AND i.user_id = ${userId}::uuid
+          )
+          AND (
+            1 - (a.embedding <=> ${vectorStr}::vector) < ${cursor.score}
+            OR (
+              1 - (a.embedding <=> ${vectorStr}::vector) = ${cursor.score}
+              AND a.id < ${cursor.id}
+            )
+          )
+        ORDER BY similarity DESC, a.id DESC
+        LIMIT ${fetchLimit}
+      `;
+    } else {
+      // カーソルがない場合: 最初から取得
+      articles = await prisma.$queryRaw<PersonalizedArticle[]>`
+        SELECT
+          a.id,
+          a.title,
+          a.summary,
+          a.url,
+          a.image_url as "imageUrl",
+          a.published_at as "publishedAt",
+          s.id as "sourceId",
+          s.name as "sourceName",
+          1 - (a.embedding <=> ${vectorStr}::vector) AS similarity
+        FROM articles a
+        JOIN sources s ON a.source_id = s.id
+        WHERE a.embedding IS NOT NULL
+          AND 1 - (a.embedding <=> ${vectorStr}::vector) >= ${minScore}
+          AND NOT EXISTS (
+            SELECT 1 FROM interactions i
+            WHERE i.article_id = a.id AND i.user_id = ${userId}::uuid
+          )
+        ORDER BY similarity DESC, a.id DESC
+        LIMIT ${fetchLimit}
+      `;
+    }
+
+    const hasMore = articles.length > limit;
+    const resultArticles = hasMore ? articles.slice(0, limit) : articles;
+
+    return {
+      articles: resultArticles,
+      hasMore,
+    };
   },
 
   /**
