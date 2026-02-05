@@ -135,11 +135,27 @@ export function useAuth() {
     }
   }, [navigate]);
 
+  const signInWithGoogle = useCallback(async () => {
+    setState((prev) => ({ ...prev, isLoading: true }));
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
+      return { success: true, error: null };
+    } catch (err) {
+      setState((prev) => ({ ...prev, isLoading: false }));
+      const message = err instanceof Error ? err.message : "Googleログインに失敗しました";
+      return { success: false, error: message };
+    }
+  }, []);
+
   return {
     ...state,
     signIn,
     signUp,
     signOut,
+    signInWithGoogle,
     checkSession,
   };
 }
