@@ -22,9 +22,23 @@ export interface SwipeableCardStackProps {
   articles: Article[];
   onSwipe: (articleId: string, type: InteractionType) => void;
   onCardTap?: (article: Article) => void;
+  onNeedMoreArticles?: () => void;
+  hasMoreArticles?: boolean;
+  isFetchingMore?: boolean;
+  exhaustedByThreshold?: boolean;
 }
 
-export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCardStackProps) {
+const PREFETCH_THRESHOLD = 5;
+
+export function SwipeableCardStack({
+  articles,
+  onSwipe,
+  onCardTap,
+  onNeedMoreArticles,
+  hasMoreArticles = false,
+  isFetchingMore = false,
+  exhaustedByThreshold = false,
+}: SwipeableCardStackProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [history, setHistory] = useState<{ article: Article; type: InteractionType }[]>([]);
   const [isDraggingHorizontal, setIsDraggingHorizontal] = useState(false);
@@ -177,6 +191,32 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleSkip, handleLike, handleUndo]);
 
+  // 残り記事数が少なくなったら追加読み込みをトリガー
+  useEffect(() => {
+    const remainingArticles = articles.length - currentIndex;
+    if (
+      remainingArticles <= PREFETCH_THRESHOLD &&
+      hasMoreArticles &&
+      !isFetchingMore &&
+      onNeedMoreArticles
+    ) {
+      onNeedMoreArticles();
+    }
+  }, [currentIndex, articles.length, hasMoreArticles, isFetchingMore, onNeedMoreArticles]);
+
+  // スコア閾値以上の記事がすべて消費された場合
+  if (!hasMore && exhaustedByThreshold) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+        <div className="mb-4 animate-emoji-bounce">
+          <FluentEmoji name="party-popper" size={80} />
+        </div>
+        <h2 className="text-xl font-semibold mb-2">おすすめの記事を全て確認しました！</h2>
+        <p className="text-muted-foreground">新しいおすすめ記事が見つかったらお知らせします</p>
+      </div>
+    );
+  }
+
   if (!hasMore) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
@@ -236,6 +276,7 @@ export function SwipeableCardStack({ articles, onSwipe, onCardTap }: SwipeableCa
         <span>← スキップ</span>
         <span className="text-muted-foreground/50">
           {currentIndex + 1} / {articles.length}
+          {isFetchingMore && " (読み込み中...)"}
         </span>
         <span>興味あり →</span>
       </div>

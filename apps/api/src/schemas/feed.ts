@@ -54,6 +54,9 @@ export const FeedResponseSchema = z
     articles: z.array(FeedArticleSchema),
     nextCursor: z.string().nullable(),
     hasMore: z.boolean(),
+    exhaustedByThreshold: z.boolean().optional().openapi({
+      description: "スコア閾値以上の記事がすべて消費されたかどうか",
+    }),
   })
   .openapi("FeedResponse");
 

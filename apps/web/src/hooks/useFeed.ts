@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { honoClient } from "@/lib/hono";
 import type { Article, FeedResponse } from "@/types/feed";
 
@@ -7,13 +7,18 @@ interface UseFeedOptions {
   categoryId?: string;
 }
 
-async function fetchFeed(options: UseFeedOptions = {}): Promise<FeedResponse> {
-  const { limit = 20, categoryId } = options;
+interface FetchFeedParams extends UseFeedOptions {
+  cursor?: string;
+}
+
+async function fetchFeed(params: FetchFeedParams = {}): Promise<FeedResponse> {
+  const { limit = 20, categoryId, cursor } = params;
 
   const response = await honoClient.api.feed.$get({
     query: {
       limit: limit.toString(),
       categoryId,
+      cursor,
     },
   });
 
@@ -47,5 +52,47 @@ export function useFeedArticles(options: UseFeedOptions = {}): {
     isError: query.isError,
     error: query.error,
     refetch: query.refetch,
+  };
+}
+
+export function useInfiniteFeed(options: UseFeedOptions = {}) {
+  return useInfiniteQuery({
+    queryKey: ["feed", "infinite", options],
+    queryFn: ({ pageParam }) => fetchFeed({ ...options, cursor: pageParam }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+  });
+}
+
+export function useInfiniteFeedArticles(options: UseFeedOptions = {}): {
+  articles: Article[];
+  isLoading: boolean;
+  isError: boolean;
+  error: Error | null;
+  refetch: () => void;
+  fetchNextPage: () => void;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  exhaustedByThreshold: boolean;
+} {
+  const query = useInfiniteFeed(options);
+
+  // 全ページの記事をフラット化
+  const articles = query.data?.pages.flatMap((page) => page.articles) ?? [];
+
+  // 最後のページの exhaustedByThreshold を取得
+  const lastPage = query.data?.pages.at(-1);
+  const exhaustedByThreshold = lastPage?.exhaustedByThreshold ?? false;
+
+  return {
+    articles,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    refetch: query.refetch,
+    fetchNextPage: query.fetchNextPage,
+    hasNextPage: query.hasNextPage,
+    isFetchingNextPage: query.isFetchingNextPage,
+    exhaustedByThreshold,
   };
 }

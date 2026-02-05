@@ -9,6 +9,7 @@ type FeedResult = {
   articles: FeedArticle[];
   nextCursor: string | null;
   hasMore: boolean;
+  exhaustedByThreshold?: boolean;
 };
 
 type ArticleFromDb = {
@@ -161,15 +162,17 @@ export const feedService = {
    * パーソナライズドフィードを取得
    *
    * ユーザーの興味ベクトルとカテゴリ嗜好に基づいて記事をリランキング。
+   * スコア閾値（0.4）以上の記事のみ返却。
    * 興味ベクトルがない場合は通常のフィードにフォールバック。
    */
   getPersonalizedFeed: (
     userId: string,
     options: {
       limit: number;
+      cursor?: string;
     },
   ): ResultAsync<FeedResult, PrismaErrorType> => {
-    const { limit } = options;
+    const { limit, cursor } = options;
 
     return ResultAsync.fromPromise(
       (async () => {
@@ -181,21 +184,35 @@ export const feedService = {
           return null;
         }
 
+        // カーソルをデコード: base64("score_id")
+        let parsedCursor: { score: number; id: string } | undefined;
+        if (cursor) {
+          const decoded = Buffer.from(cursor, "base64").toString("utf-8");
+          const parts = decoded.split("_");
+          if (parts.length >= 2) {
+            const score = Number.parseFloat(parts[0] ?? "");
+            const id = parts.slice(1).join("_"); // IDに"_"が含まれる場合を考慮
+            if (!Number.isNaN(score) && id) {
+              parsedCursor = { score, id };
+            }
+          }
+        }
+
         // カテゴリスコアを取得
         const categoryPreferences = await personalizationService.getUserCategoryPreferences(userId);
 
-        // ベクトル類似度で記事を検索
-        const articles = await personalizationService.searchByVectorSimilarity(
-          userVector,
-          userId,
-          limit,
-        );
+        // ベクトル類似度で記事を検索（スコア閾値フィルタリング適用）
+        const { articles, hasMore: hasMoreFromVector } =
+          await personalizationService.searchByVectorSimilarity(userVector, userId, limit, {
+            cursor: parsedCursor,
+          });
 
         if (articles.length === 0) {
           return {
             articles: [],
             nextCursor: null,
             hasMore: false,
+            exhaustedByThreshold: true,
           };
         }
 
@@ -209,9 +226,6 @@ export const feedService = {
           categoryPreferences,
           articleCategories,
         );
-
-        // 上位N件を返す
-        const resultArticles = rerankedArticles.slice(0, limit);
 
         // カテゴリ情報をMap化
         const categoryMap = new Map<string, Array<{ id: string; slug: string; name: string }>>();
@@ -235,8 +249,15 @@ export const feedService = {
           }
         }
 
+        // 最後の記事からカーソルを生成
+        const lastArticle = rerankedArticles.at(-1);
+        const nextCursor =
+          hasMoreFromVector && lastArticle
+            ? Buffer.from(`${lastArticle.similarity}_${lastArticle.id}`).toString("base64")
+            : null;
+
         return {
-          articles: resultArticles.map((article) => ({
+          articles: rerankedArticles.map((article) => ({
             id: article.id,
             title: article.title,
             summary: article.summary,
@@ -249,8 +270,9 @@ export const feedService = {
             },
             categories: categoryMap.get(article.id) ?? [],
           })),
-          nextCursor: null,
-          hasMore: false,
+          nextCursor,
+          hasMore: hasMoreFromVector,
+          exhaustedByThreshold: !hasMoreFromVector,
         };
       })(),
       (e) => new PrismaError(e instanceof Error ? e.message : "Database error", e),

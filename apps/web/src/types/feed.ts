@@ -26,6 +26,7 @@ export interface FeedResponse {
   articles: Article[];
   nextCursor: string | null;
   hasMore: boolean;
+  exhaustedByThreshold?: boolean;
 }
 
 export type InteractionType = "SKIP" | "LIKE" | "OPEN" | "READ";
