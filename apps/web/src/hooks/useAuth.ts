@@ -140,7 +140,7 @@ export function useAuth() {
     try {
       await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: window.location.origin,
       });
       return { success: true, error: null };
     } catch (err) {
