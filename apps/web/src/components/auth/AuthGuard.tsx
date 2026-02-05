@@ -11,7 +11,10 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children, skipOnboardingCheck = false }: AuthGuardProps) {
   const { isLoading: authLoading, isAuthenticated } = useAuth();
-  const { data: onboardingStatus, isLoading: onboardingLoading } = useOnboardingStatus();
+  // 認証済みかつオンボーディングチェックが必要な場合のみステータスを取得
+  const { data: onboardingStatus, isLoading: onboardingLoading } = useOnboardingStatus(
+    isAuthenticated && !skipOnboardingCheck,
+  );
   const navigate = useNavigate();
 
   const isLoading = authLoading || (!skipOnboardingCheck && onboardingLoading);

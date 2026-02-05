@@ -62,10 +62,6 @@ export const userService = {
     }
 
     // 通常の場合：選択されたカテゴリを検証
-    if (categoryIds.length === 0) {
-      return errAsync(new NotFoundError("少なくとも1つのカテゴリを選択してください"));
-    }
-
     return fromPrisma<CategoryIds>(
       prisma.category.findMany({
         where: { id: { in: categoryIds } },
@@ -206,19 +202,20 @@ const generateInitialInterestVector = async (
     categoryVectors.push({ categoryId, vector: avgVector, score });
   }
 
-  if (categoryVectors.length === 0) {
+  const firstVector = categoryVectors[0];
+  if (!firstVector) {
     return false;
   }
 
   // カテゴリ代表ベクトルをスコアで加重平均
   const totalScore = categoryVectors.reduce((sum, cv) => sum + cv.score, 0);
-  const dimension = categoryVectors[0].vector.length;
-  const interestVector = new Array(dimension).fill(0);
+  const dimension = firstVector.vector.length;
+  const interestVector = new Array<number>(dimension).fill(0);
 
   for (const cv of categoryVectors) {
     const weight = cv.score / totalScore;
     for (let i = 0; i < dimension; i++) {
-      interestVector[i] += cv.vector[i] * weight;
+      interestVector[i] += (cv.vector[i] ?? 0) * weight;
     }
   }
 
@@ -257,13 +254,14 @@ const parseVector = (vectorStr: string): number[] => {
  * ベクトル配列の平均を計算
  */
 const averageVectors = (vectors: number[][]): number[] => {
-  if (vectors.length === 0) return [];
-  const dimension = vectors[0].length;
-  const result = new Array(dimension).fill(0);
+  const first = vectors[0];
+  if (!first) return [];
+  const dimension = first.length;
+  const result = new Array<number>(dimension).fill(0);
 
   for (const vec of vectors) {
     for (let i = 0; i < dimension; i++) {
-      result[i] += vec[i];
+      result[i] += vec[i] ?? 0;
     }
   }
 

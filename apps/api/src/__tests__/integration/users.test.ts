@@ -61,7 +61,7 @@ describe("POST /api/users/me/categories", () => {
     expect(res.status).toBe(404);
   });
 
-  it("空のカテゴリ配列を指定すると404が返る（スキップでない場合）", async () => {
+  it("空のカテゴリ配列を指定すると400が返る（スキップでない場合）", async () => {
     // Arrange
     const { session } = await createTestUserWithSession();
     const client = authenticatedRequest(app, session.token);
@@ -70,7 +70,7 @@ describe("POST /api/users/me/categories", () => {
     const res = await client.post("/api/users/me/categories", { categoryIds: [] });
 
     // Assert
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(400);
   });
 
   it("skipped=trueで全カテゴリが中立スコアで設定される", async () => {

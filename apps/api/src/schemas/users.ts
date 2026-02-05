@@ -18,6 +18,10 @@ export const SetCategoriesRequestSchema = z
       example: false,
     }),
   })
+  .refine((data) => data.skipped === true || data.categoryIds.length > 0, {
+    message: "少なくとも1つのカテゴリを選択してください",
+    path: ["categoryIds"],
+  })
   .openapi("SetCategoriesRequest");
 
 /**

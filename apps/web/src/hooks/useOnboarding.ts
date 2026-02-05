@@ -16,10 +16,11 @@ async function fetchOnboardingStatus(): Promise<OnboardingStatus> {
   return response.json();
 }
 
-export function useOnboardingStatus() {
+export function useOnboardingStatus(enabled = true) {
   return useQuery({
     queryKey: ["onboarding-status"],
     queryFn: fetchOnboardingStatus,
     staleTime: 1000 * 60 * 5, // 5分キャッシュ
+    enabled,
   });
 }
