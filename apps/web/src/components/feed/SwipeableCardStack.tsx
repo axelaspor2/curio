@@ -274,10 +274,7 @@ export function SwipeableCardStack({
 
       <div className="flex items-center justify-between px-8 py-2 text-xs text-muted-foreground">
         <span>← スキップ</span>
-        <span className="text-muted-foreground/50">
-          {currentIndex + 1} / {articles.length}
-          {isFetchingMore && " (読み込み中...)"}
-        </span>
+        {isFetchingMore && <span className="text-muted-foreground/50">読み込み中...</span>}
         <span>興味あり →</span>
       </div>
 
