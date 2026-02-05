@@ -215,7 +215,9 @@ const generateInitialInterestVector = async (
   for (const cv of categoryVectors) {
     const weight = cv.score / totalScore;
     for (let i = 0; i < dimension; i++) {
-      interestVector[i] += (cv.vector[i] ?? 0) * weight;
+      const current = interestVector[i] ?? 0;
+      const vectorValue = cv.vector[i] ?? 0;
+      interestVector[i] = current + vectorValue * weight;
     }
   }
 
@@ -223,7 +225,10 @@ const generateInitialInterestVector = async (
   const norm = Math.sqrt(interestVector.reduce((sum, v) => sum + v * v, 0));
   if (norm > 0) {
     for (let i = 0; i < dimension; i++) {
-      interestVector[i] /= norm;
+      const current = interestVector[i];
+      if (current !== undefined) {
+        interestVector[i] = current / norm;
+      }
     }
   }
 
@@ -261,12 +266,17 @@ const averageVectors = (vectors: number[][]): number[] => {
 
   for (const vec of vectors) {
     for (let i = 0; i < dimension; i++) {
-      result[i] += vec[i] ?? 0;
+      const current = result[i] ?? 0;
+      const value = vec[i] ?? 0;
+      result[i] = current + value;
     }
   }
 
   for (let i = 0; i < dimension; i++) {
-    result[i] /= vectors.length;
+    const current = result[i];
+    if (current !== undefined) {
+      result[i] = current / vectors.length;
+    }
   }
 
   return result;
