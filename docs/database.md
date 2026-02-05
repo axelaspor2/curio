@@ -481,6 +481,13 @@ model Article {
 }
 ```
 
+**カラム用途（著作権対応）**:
+
+| カラム | 用途 | ユーザー表示 |
+|--------|------|-------------|
+| `description` | フィードから取得した説明文 | ✅ カードに表示 |
+| `content` | スクレイピングした本文 | ❌ 内部のみ（ベクトル生成用） |
+
 #### interactions テーブル
 
 ```prisma
@@ -498,6 +505,12 @@ model Interaction {
 |--------|------------|------|
 | `cleanup-articles` | 毎日深夜 | 1ヶ月以上前の記事を削除 |
 | `reset-daily-count` | 毎日0時 | 全ユーザーの dailyArticleCount をリセット |
+
+**cleanup-articles の詳細**:
+
+- 対象: `published_at` が1ヶ月以上前の記事
+- `article_categories` も CASCADE で削除
+- `interactions` は残る（非正規化データで統計分析が可能）
 
 ### API変更
 
