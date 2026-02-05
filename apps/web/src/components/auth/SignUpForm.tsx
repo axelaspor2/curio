@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Loader2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { type FormEvent, useState } from "react";
 import { Button, Input } from "@/components/ui";
 import { useAuth } from "@/hooks";
@@ -34,6 +34,7 @@ export function SignUpForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [showEmailForm, setShowEmailForm] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -62,85 +63,15 @@ export function SignUpForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="space-y-2">
-        <label htmlFor="name" className="text-sm font-medium">
-          ユーザー名
-        </label>
-        <Input
-          id="name"
-          type="text"
-          placeholder="あなたの名前"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          error={!!error}
-          disabled={isLoading}
-          autoComplete="name"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="email" className="text-sm font-medium">
-          メールアドレス
-        </label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          error={!!error}
-          disabled={isLoading}
-          autoComplete="email"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="password" className="text-sm font-medium">
-          パスワード
-        </label>
-        <Input
-          id="password"
-          type="password"
-          placeholder="8文字以上"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          error={!!error}
-          disabled={isLoading}
-          autoComplete="new-password"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label htmlFor="confirmPassword" className="text-sm font-medium">
-          パスワード（確認）
-        </label>
-        <Input
-          id="confirmPassword"
-          type="password"
-          placeholder="パスワードを再入力"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          error={!!error}
-          disabled={isLoading}
-          autoComplete="new-password"
-        />
-      </div>
-
-      {error && (
-        <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
-          {error}
-        </div>
-      )}
-
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? (
-          <>
-            <Loader2 className="animate-spin" />
-            登録中...
-          </>
-        ) : (
-          "アカウントを作成"
-        )}
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={signInWithGoogle}
+        disabled={isLoading}
+      >
+        <GoogleIcon />
+        Googleで始める
       </Button>
 
       <div className="relative">
@@ -152,16 +83,103 @@ export function SignUpForm() {
         </div>
       </div>
 
-      <Button
+      <button
         type="button"
-        variant="outline"
-        className="w-full"
-        onClick={signInWithGoogle}
-        disabled={isLoading}
+        className="flex w-full items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        onClick={() => setShowEmailForm(!showEmailForm)}
       >
-        <GoogleIcon />
-        Googleで登録
-      </Button>
+        {showEmailForm ? (
+          <ChevronDown className="h-4 w-4" />
+        ) : (
+          <ChevronRight className="h-4 w-4" />
+        )}
+        メールアドレスで登録
+      </button>
+
+      {showEmailForm && (
+        <div className="space-y-4 rounded-lg border p-4">
+          <div className="space-y-2">
+            <label htmlFor="name" className="text-sm font-medium">
+              ユーザー名
+            </label>
+            <Input
+              id="name"
+              type="text"
+              placeholder="あなたの名前"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              error={!!error}
+              disabled={isLoading}
+              autoComplete="name"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-medium">
+              メールアドレス
+            </label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={!!error}
+              disabled={isLoading}
+              autoComplete="email"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-sm font-medium">
+              パスワード
+            </label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="8文字以上"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              error={!!error}
+              disabled={isLoading}
+              autoComplete="new-password"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="confirmPassword" className="text-sm font-medium">
+              パスワード（確認）
+            </label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="パスワードを再入力"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              error={!!error}
+              disabled={isLoading}
+              autoComplete="new-password"
+            />
+          </div>
+
+          {error && (
+            <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="animate-spin" />
+                登録中...
+              </>
+            ) : (
+              "アカウントを作成"
+            )}
+          </Button>
+        </div>
+      )}
 
       <p className="text-center text-sm text-muted-foreground">
         既にアカウントをお持ちの方は{" "}

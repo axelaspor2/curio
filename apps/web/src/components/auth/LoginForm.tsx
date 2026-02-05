@@ -50,6 +50,26 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={signInWithGoogle}
+        disabled={isLoading}
+      >
+        <GoogleIcon />
+        Googleでログイン
+      </Button>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">または</span>
+        </div>
+      </div>
+
       <div className="space-y-2">
         <label htmlFor="email" className="text-sm font-medium">
           メールアドレス
@@ -95,28 +115,8 @@ export function LoginForm() {
             ログイン中...
           </>
         ) : (
-          "ログイン"
+          "メールアドレスでログイン"
         )}
-      </Button>
-
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">または</span>
-        </div>
-      </div>
-
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full"
-        onClick={signInWithGoogle}
-        disabled={isLoading}
-      >
-        <GoogleIcon />
-        Googleでログイン
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">
