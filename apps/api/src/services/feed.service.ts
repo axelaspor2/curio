@@ -279,7 +279,7 @@ export const feedService = {
     ).andThen((result) => {
       // 興味ベクトルがない場合は通常のフィードにフォールバック
       if (result === null) {
-        return feedService.getFeed(userId, { limit });
+        return feedService.getFeed(userId, { limit, cursor });
       }
       return ResultAsync.fromSafePromise(Promise.resolve(result));
     });
