@@ -31,6 +31,18 @@ locals {
         "${var.project_number}-compute@developer.gserviceaccount.com",
       ]
     }
+
+    # Google OAuth (Production)
+    "curio-google-client-id" = {
+      accessors = [
+        "${var.project_number}-compute@developer.gserviceaccount.com",
+      ]
+    }
+    "curio-google-client-secret" = {
+      accessors = [
+        "${var.project_number}-compute@developer.gserviceaccount.com",
+      ]
+    }
   }
 
   # シークレット×アクセサーの組み合わせをフラット化

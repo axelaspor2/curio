@@ -3,6 +3,9 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { corsOrigins } from "./config.js";
 
+const googleClientId = process.env.GOOGLE_CLIENT_ID;
+const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
 /**
  * Better Auth の設定
  *
@@ -18,6 +21,17 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  // Google OAuthは環境変数が設定されている場合のみ有効化
+  ...(googleClientId && googleClientSecret
+    ? {
+        socialProviders: {
+          google: {
+            clientId: googleClientId,
+            clientSecret: googleClientSecret,
+          },
+        },
+      }
+    : {}),
   user: {
     modelName: "user",
     fields: {
