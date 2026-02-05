@@ -40,6 +40,16 @@ spec:
                 secretKeyRef:
                   name: curio-auth-secret
                   key: latest
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: curio-google-client-id
+                  key: latest
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: curio-google-client-secret
+                  key: latest
   traffic:
     - percent: 100
       latestRevision: true
