@@ -2,6 +2,20 @@
 
 Curio のデータベースパッケージ。Prisma ORM + pgvector を使用。
 
+## ディレクトリ構成
+
+```
+├── prisma/
+│   ├── schema.prisma       # スキーマ定義
+│   ├── seed.ts             # シードデータスクリプト
+│   ├── test.ts             # テスト用セットアップ
+│   └── migrations/         # マイグレーションファイル
+├── src/
+│   └── index.ts            # Prisma Client エクスポート (Singleton)
+├── prisma.config.ts        # Prisma 7 設定
+└── package.json
+```
+
 ## セットアップ
 
 ```bash
