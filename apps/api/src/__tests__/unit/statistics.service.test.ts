@@ -19,13 +19,13 @@ describe("statisticsService", () => {
       const { user } = await createTestUserWithSession();
       const source = await createTestSource();
       const categories = await createTestCategories();
-      const articles = await createTestArticles(source.id, [categories[0].id], 5);
+      const articles = await createTestArticles(source.id, [categories.at(0)!.id], 5);
 
       // インタラクションを作成
-      await createTestInteraction(user.id, articles[0].id, "LIKE");
-      await createTestInteraction(user.id, articles[1].id, "LIKE");
-      await createTestInteraction(user.id, articles[2].id, "SKIP");
-      await createTestInteraction(user.id, articles[3].id, "READ", 120);
+      await createTestInteraction(user.id, articles.at(0)!.id, "LIKE");
+      await createTestInteraction(user.id, articles.at(1)!.id, "LIKE");
+      await createTestInteraction(user.id, articles.at(2)!.id, "SKIP");
+      await createTestInteraction(user.id, articles.at(3)!.id, "READ", 120);
 
       // Act
       const result = await statisticsService.getStatistics(user.id);
@@ -47,14 +47,14 @@ describe("statisticsService", () => {
       const categories = await createTestCategories();
 
       // テクノロジー記事を3つ、ビジネス記事を1つ作成
-      const techArticles = await createTestArticles(source.id, [categories[0].id], 3);
-      const bizArticles = await createTestArticles(source.id, [categories[1].id], 1);
+      const techArticles = await createTestArticles(source.id, [categories.at(0)!.id], 3);
+      const bizArticles = await createTestArticles(source.id, [categories.at(1)!.id], 1);
 
       // テクノロジー3件、ビジネス1件をLIKE
-      await createTestInteraction(user.id, techArticles[0].id, "LIKE");
-      await createTestInteraction(user.id, techArticles[1].id, "LIKE");
-      await createTestInteraction(user.id, techArticles[2].id, "LIKE");
-      await createTestInteraction(user.id, bizArticles[0].id, "LIKE");
+      await createTestInteraction(user.id, techArticles.at(0)!.id, "LIKE");
+      await createTestInteraction(user.id, techArticles.at(1)!.id, "LIKE");
+      await createTestInteraction(user.id, techArticles.at(2)!.id, "LIKE");
+      await createTestInteraction(user.id, bizArticles.at(0)!.id, "LIKE");
 
       // Act
       const result = await statisticsService.getStatistics(user.id);
@@ -63,8 +63,8 @@ describe("statisticsService", () => {
       expect(result.isOk()).toBe(true);
       if (result.isOk()) {
         expect(result.value.topLikedCategories.length).toBeGreaterThanOrEqual(1);
-        expect(result.value.topLikedCategories[0].categoryName).toBe("テクノロジー");
-        expect(result.value.topLikedCategories[0].count).toBe(3);
+        expect(result.value.topLikedCategories.at(0)!.categoryName).toBe("テクノロジー");
+        expect(result.value.topLikedCategories.at(0)!.count).toBe(3);
       }
     });
 
@@ -75,9 +75,9 @@ describe("statisticsService", () => {
       const categories = await createTestCategories();
 
       // ビジネス記事を2つ作成してSKIP
-      const bizArticles = await createTestArticles(source.id, [categories[1].id], 2);
-      await createTestInteraction(user.id, bizArticles[0].id, "SKIP");
-      await createTestInteraction(user.id, bizArticles[1].id, "SKIP");
+      const bizArticles = await createTestArticles(source.id, [categories.at(1)!.id], 2);
+      await createTestInteraction(user.id, bizArticles.at(0)!.id, "SKIP");
+      await createTestInteraction(user.id, bizArticles.at(1)!.id, "SKIP");
 
       // Act
       const result = await statisticsService.getStatistics(user.id);
@@ -86,8 +86,8 @@ describe("statisticsService", () => {
       expect(result.isOk()).toBe(true);
       if (result.isOk()) {
         expect(result.value.topSkippedCategories.length).toBeGreaterThanOrEqual(1);
-        expect(result.value.topSkippedCategories[0].categoryName).toBe("ビジネス");
-        expect(result.value.topSkippedCategories[0].count).toBe(2);
+        expect(result.value.topSkippedCategories.at(0)!.categoryName).toBe("ビジネス");
+        expect(result.value.topSkippedCategories.at(0)!.count).toBe(2);
       }
     });
 
