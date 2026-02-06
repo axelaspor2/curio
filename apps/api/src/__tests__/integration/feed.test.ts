@@ -9,6 +9,7 @@ import {
   createTestCategories,
   createTestInteraction,
   createTestSource,
+  createUnenrichedArticles,
 } from "../fixtures.js";
 import {
   authenticatedRequest,
@@ -87,6 +88,58 @@ describe("GET /api/feed", () => {
 
     // Assert
     expect(res.status).toBe(401);
+  });
+
+  it("レスポンスにdescriptionフィールドが含まれる", async () => {
+    // Arrange
+    const { session } = await createTestUserWithSession();
+    const source = await createTestSource();
+    await createTestArticles(source.id, [], 1);
+    const client = authenticatedRequest(app, session.token);
+
+    // Act
+    const res = await client.get("/api/feed?limit=10");
+
+    // Assert
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as FeedResponse;
+    expect(json.articles).toHaveLength(1);
+    expect(json.articles[0]).toHaveProperty("description");
+    expect(json.articles[0]!.description).toContain("Description of article");
+  });
+
+  it("未エンリッチの記事はフィードに含まれない", async () => {
+    // Arrange
+    const { session } = await createTestUserWithSession();
+    const source = await createTestSource();
+    await createTestArticles(source.id, [], 2);
+    // enrichedAtがnull
+    await createUnenrichedArticles(source.id, {
+      content: "has content",
+      description: "has description",
+      enrichedAt: null,
+    });
+    // contentがnull
+    await createUnenrichedArticles(source.id, {
+      content: null,
+      description: "has description",
+      enrichedAt: new Date(),
+    });
+    // descriptionがnull
+    await createUnenrichedArticles(source.id, {
+      content: "has content",
+      description: null,
+      enrichedAt: new Date(),
+    });
+    const client = authenticatedRequest(app, session.token);
+
+    // Act
+    const res = await client.get("/api/feed?limit=20");
+
+    // Assert
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as FeedResponse;
+    expect(json.articles).toHaveLength(2);
   });
 
   it("ページネーションが正しく機能する", async () => {

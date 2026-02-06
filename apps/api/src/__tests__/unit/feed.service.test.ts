@@ -9,6 +9,7 @@ import {
   createTestCategories,
   createTestInteraction,
   createTestSource,
+  createUnenrichedArticles,
 } from "../fixtures.js";
 import { createTestUserWithSession } from "../helpers.js";
 
@@ -93,6 +94,69 @@ describe("feedService", () => {
         result.value.articles.forEach((article) => {
           expect(article.categories.some((c) => c.id === categoryId)).toBe(true);
         });
+      }
+    });
+
+    it("enrichedAtがnullの記事は除外される", async () => {
+      // Arrange
+      const { user } = await createTestUserWithSession();
+      const source = await createTestSource();
+      await createTestArticles(source.id, [], 2);
+      await createUnenrichedArticles(source.id, {
+        content: "has content",
+        description: "has description",
+        enrichedAt: null,
+      });
+
+      // Act
+      const result = await feedService.getFeed(user.id, { limit: 10 });
+
+      // Assert
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.articles).toHaveLength(2);
+      }
+    });
+
+    it("contentがnullの記事は除外される", async () => {
+      // Arrange
+      const { user } = await createTestUserWithSession();
+      const source = await createTestSource();
+      await createTestArticles(source.id, [], 2);
+      await createUnenrichedArticles(source.id, {
+        content: null,
+        description: "has description",
+        enrichedAt: new Date(),
+      });
+
+      // Act
+      const result = await feedService.getFeed(user.id, { limit: 10 });
+
+      // Assert
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.articles).toHaveLength(2);
+      }
+    });
+
+    it("descriptionがnullの記事は除外される", async () => {
+      // Arrange
+      const { user } = await createTestUserWithSession();
+      const source = await createTestSource();
+      await createTestArticles(source.id, [], 2);
+      await createUnenrichedArticles(source.id, {
+        content: "has content",
+        description: null,
+        enrichedAt: new Date(),
+      });
+
+      // Act
+      const result = await feedService.getFeed(user.id, { limit: 10 });
+
+      // Assert
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.articles).toHaveLength(2);
       }
     });
 

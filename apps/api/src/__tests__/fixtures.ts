@@ -58,6 +58,35 @@ export const createTestInteraction = async (
 /**
  * テスト用記事を作成
  */
+/**
+ * テスト用の未エンリッチ記事を作成（フィードに表示されないことを検証するため）
+ */
+export const createUnenrichedArticles = async (
+  sourceId: string,
+  overrides: { content?: string | null; description?: string | null; enrichedAt?: Date | null } = {},
+  count: number = 1,
+) => {
+  const articles = [];
+  for (let i = 0; i < count; i++) {
+    const article = await prisma.article.create({
+      data: {
+        sourceId,
+        title: `Unenriched Article ${i + 1}`,
+        content: overrides.content !== undefined ? overrides.content : null,
+        description: overrides.description !== undefined ? overrides.description : null,
+        enrichedAt: overrides.enrichedAt !== undefined ? overrides.enrichedAt : null,
+        url: `https://example.com/unenriched-${i + 1}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        publishedAt: new Date(),
+      },
+    });
+    articles.push(article);
+  }
+  return articles;
+};
+
+/**
+ * テスト用記事を作成
+ */
 export const createTestArticles = async (
   sourceId: string,
   categoryIds: string[] = [],
@@ -71,7 +100,8 @@ export const createTestArticles = async (
         sourceId,
         title: `Test Article ${i + 1}`,
         content: `This is test content for article ${i + 1}`,
-        summary: `Summary of article ${i + 1}`,
+        description: `Description of article ${i + 1}`,
+        enrichedAt: new Date(),
         url: `https://example.com/article-${i + 1}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
         imageUrl: `https://example.com/image-${i + 1}.jpg`,
         publishedAt: new Date(Date.now() - i * 3600000), // 1時間ずつ古い

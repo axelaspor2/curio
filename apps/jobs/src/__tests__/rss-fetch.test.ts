@@ -183,6 +183,133 @@ describe("rssService", () => {
       }
     });
 
+    it("既存記事のdescriptionがnullの場合にバックフィルされる", async () => {
+      const source = await prisma.source.create({
+        data: {
+          type: "rss",
+          name: "Test Feed",
+          url: "https://example.com/feed.xml",
+        },
+      });
+
+      // descriptionがnullの既存記事
+      await prisma.article.create({
+        data: {
+          sourceId: source.id,
+          externalId: "existing-item",
+          title: "Existing Article",
+          url: "https://example.com/existing",
+          description: null,
+        },
+      });
+
+      const items = [
+        {
+          title: "Existing Article",
+          link: "https://example.com/existing",
+          guid: "existing-item",
+          contentSnippet: "Backfilled description",
+        },
+      ];
+
+      const result = await rssService.saveArticles(source.id, source.name, items);
+
+      expect(result.isOk()).toBe(true);
+      if (result.isOk()) {
+        expect(result.value.savedCount).toBe(0);
+        expect(result.value.skippedCount).toBe(1);
+      }
+
+      // descriptionがバックフィルされたことを確認
+      const article = await prisma.article.findFirst({
+        where: { url: "https://example.com/existing" },
+      });
+      expect(article?.description).toBe("Backfilled description");
+    });
+
+    it("既存記事のdescriptionが既にある場合は上書きしない", async () => {
+      const source = await prisma.source.create({
+        data: {
+          type: "rss",
+          name: "Test Feed",
+          url: "https://example.com/feed.xml",
+        },
+      });
+
+      // descriptionが既にセットされた既存記事
+      await prisma.article.create({
+        data: {
+          sourceId: source.id,
+          externalId: "existing-item",
+          title: "Existing Article",
+          url: "https://example.com/existing",
+          description: "Original description",
+        },
+      });
+
+      const items = [
+        {
+          title: "Existing Article",
+          link: "https://example.com/existing",
+          guid: "existing-item",
+          contentSnippet: "New description",
+        },
+      ];
+
+      await rssService.saveArticles(source.id, source.name, items);
+
+      // descriptionは上書きされないことを確認
+      const article = await prisma.article.findFirst({
+        where: { url: "https://example.com/existing" },
+      });
+      expect(article?.description).toBe("Original description");
+    });
+
+    it("新規記事にdescriptionが保存される", async () => {
+      const source = await prisma.source.create({
+        data: {
+          type: "rss",
+          name: "Test Feed",
+          url: "https://example.com/feed.xml",
+        },
+      });
+
+      const items = [
+        {
+          title: "Article with contentSnippet",
+          link: "https://example.com/article-1",
+          guid: "item-1",
+          contentSnippet: "This is a snippet",
+        },
+        {
+          title: "Article with summary only",
+          link: "https://example.com/article-2",
+          guid: "item-2",
+          summary: "This is from summary tag",
+        },
+        {
+          title: "Article without description",
+          link: "https://example.com/article-3",
+          guid: "item-3",
+        },
+      ];
+
+      await rssService.saveArticles(source.id, source.name, items);
+
+      const articles = await prisma.article.findMany({
+        where: { sourceId: source.id },
+        orderBy: { url: "asc" },
+      });
+
+      expect(articles).toHaveLength(3);
+      // contentSnippetが優先される
+      expect(articles[0]?.description).toBe("This is a snippet");
+      // summaryにフォールバック
+      expect(articles[1]?.description).toBe("This is from summary tag");
+      // どちらもない場合はnull
+      expect(articles[2]?.description).toBeNull();
+    });
+
     it("externalIdで重複チェックされる", async () => {
       const source = await prisma.source.create({
         data: {
