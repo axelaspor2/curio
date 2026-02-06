@@ -122,7 +122,7 @@ export const resources: ResourceWithOptions[] = [
     options: {
       navigation: { name: "コンテンツ管理", icon: "FileText" },
       listProperties: ["id", "title", "sourceId", "publishedAt", "fetchedAt"],
-      editProperties: ["title", "content", "summary", "url", "imageUrl", "publishedAt"],
+      editProperties: ["title", "content", "description", "url", "imageUrl", "publishedAt"],
       // embedding は表示のみ（編集不可）
       showProperties: [
         "id",
@@ -130,11 +130,12 @@ export const resources: ResourceWithOptions[] = [
         "externalId",
         "title",
         "content",
-        "summary",
+        "description",
         "url",
         "imageUrl",
         "embedding",
         "publishedAt",
+        "enrichedAt",
         "fetchedAt",
         "createdAt",
       ],
@@ -145,7 +146,7 @@ export const resources: ResourceWithOptions[] = [
         content: {
           type: "textarea",
         },
-        summary: {
+        description: {
           type: "textarea",
         },
       },

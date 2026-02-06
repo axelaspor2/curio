@@ -28,7 +28,7 @@ export const FeedArticleSchema = z
   .object({
     id: z.uuid(),
     title: z.string(),
-    summary: z.string().nullable(),
+    description: z.string().nullable(),
     url: z.string().url(),
     imageUrl: z.string().url().nullable(),
     publishedAt: z.string().datetime().nullable(),

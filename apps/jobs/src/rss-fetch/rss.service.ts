@@ -83,6 +83,7 @@ export const rssService = {
 
     const saveItem = async (item: FeedItem): Promise<{ saved: boolean; skipped: boolean }> => {
       const externalId = item.guid ?? null;
+      const description = item.contentSnippet ?? item.summary ?? null;
 
       // URLで既存の記事を検索（URLは全体で一意であるべき）
       const existingByUrl = await prisma.article.findFirst({
@@ -90,6 +91,13 @@ export const rssService = {
       });
 
       if (existingByUrl) {
+        // 既存記事のdescriptionがnullの場合はバックフィル
+        if (existingByUrl.description === null && description !== null) {
+          await prisma.article.update({
+            where: { id: existingByUrl.id },
+            data: { description },
+          });
+        }
         return { saved: false, skipped: true };
       }
 
@@ -101,8 +109,7 @@ export const rssService = {
             title: item.title,
             // contentはarticle-fetchジョブで全文スクレイピングして保存する
             content: null,
-            // RSSのcontentSnippetまたはcontentをsummaryとして保存
-            summary: item.contentSnippet ?? item.content ?? null,
+            description,
             url: item.link,
             imageUrl: item.enclosure?.url ?? null,
             publishedAt: parsePublishedAt(item),

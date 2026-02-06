@@ -14,7 +14,7 @@ export interface ArticleSource {
 export interface Article {
   id: string;
   title: string;
-  summary: string | null;
+  description: string | null;
   url: string;
   imageUrl: string | null;
   publishedAt: string | null;

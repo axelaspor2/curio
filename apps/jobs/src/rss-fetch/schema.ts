@@ -18,6 +18,7 @@ export const FeedItemSchema = z.object({
   guid: z.string().optional(),
   content: z.string().optional(),
   contentSnippet: z.string().optional(),
+  summary: z.string().optional(),
   pubDate: z.string().optional(),
   isoDate: z.string().optional(),
   enclosure: z

@@ -34,7 +34,7 @@ const enrichArticle = async (
     return { success: false, error: classificationResult.error };
   }
 
-  const { summary, categories } = classificationResult.value;
+  const { categories } = classificationResult.value;
 
   // 2. Embeddingを生成
   const embeddingResult = await geminiClient.generateEmbedding(
@@ -50,10 +50,10 @@ const enrichArticle = async (
   // 3. DBに保存（トランザクション）
   try {
     await prisma.$transaction(async (tx) => {
-      // summaryを更新
+      // enrichedAtを更新
       await tx.article.update({
         where: { id: articleId },
-        data: { summary },
+        data: { enrichedAt: new Date() },
       });
 
       // embeddingを更新（raw query）
@@ -108,12 +108,12 @@ export const enrichmentService = {
    * contentがあり、embeddingがない記事が対象。
    */
   enrichPendingArticles: async (): Promise<EnrichmentResult> => {
-    // embeddingがnullかつcontentがnullでない記事を取得
+    // enrichedAtがnullかつcontentがnullでない記事を取得
     const articles = await prisma.$queryRaw<Array<{ id: string; title: string; content: string }>>`
       SELECT id, title, content
       FROM articles
       WHERE content IS NOT NULL
-        AND embedding IS NULL
+        AND enriched_at IS NULL
       ORDER BY created_at DESC
       LIMIT ${BATCH_SIZE}
     `;
@@ -155,7 +155,7 @@ export const enrichmentService = {
       SELECT COUNT(*)::bigint as count
       FROM articles
       WHERE content IS NOT NULL
-        AND embedding IS NULL
+        AND enriched_at IS NULL
     `;
     return Number(result[0].count);
   },

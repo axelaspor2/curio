@@ -12,7 +12,7 @@ const DEFAULT_MIN_SCORE = 0.4;
 export interface PersonalizedArticle {
   id: string;
   title: string;
-  summary: string | null;
+  description: string | null;
   url: string;
   imageUrl: string | null;
   publishedAt: Date | null;
@@ -113,7 +113,7 @@ export const personalizationService = {
         SELECT
           a.id,
           a.title,
-          a.summary,
+          a.description,
           a.url,
           a.image_url as "imageUrl",
           a.published_at as "publishedAt",
@@ -123,6 +123,8 @@ export const personalizationService = {
         FROM articles a
         JOIN sources s ON a.source_id = s.id
         WHERE a.embedding IS NOT NULL
+          AND a.content IS NOT NULL
+          AND a.description IS NOT NULL
           AND 1 - (a.embedding <=> ${vectorStr}::vector) >= ${minScore}
           AND NOT EXISTS (
             SELECT 1 FROM interactions i
@@ -144,7 +146,7 @@ export const personalizationService = {
         SELECT
           a.id,
           a.title,
-          a.summary,
+          a.description,
           a.url,
           a.image_url as "imageUrl",
           a.published_at as "publishedAt",
@@ -154,6 +156,8 @@ export const personalizationService = {
         FROM articles a
         JOIN sources s ON a.source_id = s.id
         WHERE a.embedding IS NOT NULL
+          AND a.content IS NOT NULL
+          AND a.description IS NOT NULL
           AND 1 - (a.embedding <=> ${vectorStr}::vector) >= ${minScore}
           AND NOT EXISTS (
             SELECT 1 FROM interactions i

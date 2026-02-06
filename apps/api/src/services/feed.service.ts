@@ -15,7 +15,7 @@ type FeedResult = {
 type ArticleFromDb = {
   id: string;
   title: string;
-  summary: string | null;
+  description: string | null;
   url: string;
   imageUrl: string | null;
   publishedAt: Date | null;
@@ -64,6 +64,9 @@ export const feedService = {
     return fromPrisma<ArticleFromDb[]>(
       prisma.article.findMany({
         where: {
+          content: { not: null },
+          description: { not: null },
+          enrichedAt: { not: null },
           NOT: {
             interactions: {
               some: {
@@ -99,7 +102,7 @@ export const feedService = {
         select: {
           id: true,
           title: true,
-          summary: true,
+          description: true,
           url: true,
           imageUrl: true,
           publishedAt: true,
@@ -138,7 +141,7 @@ export const feedService = {
         articles: resultArticles.map((article) => ({
           id: article.id,
           title: article.title,
-          summary: article.summary,
+          description: article.description,
           url: article.url,
           imageUrl: article.imageUrl,
           publishedAt: article.publishedAt?.toISOString() ?? null,
@@ -260,7 +263,7 @@ export const feedService = {
           articles: rerankedArticles.map((article) => ({
             id: article.id,
             title: article.title,
-            summary: article.summary,
+            description: article.description,
             url: article.url,
             imageUrl: article.imageUrl,
             publishedAt: article.publishedAt?.toISOString() ?? null,

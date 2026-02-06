@@ -70,9 +70,9 @@ export const ArticleCard = forwardRef<HTMLDivElement, ArticleCardProps>(
             {article.title}
           </h2>
 
-          {article.summary && (
+          {article.description && (
             <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 flex-1">
-              {article.summary}
+              {article.description}
             </p>
           )}
 

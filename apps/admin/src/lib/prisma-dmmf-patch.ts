@@ -29,7 +29,7 @@ const NULLABLE_FIELDS: Record<string, Set<string>> = {
   User: new Set(["avatarUrl"]),
   Source: new Set([]),
   Category: new Set(["description"]),
-  Article: new Set(["externalId", "content", "summary", "imageUrl", "publishedAt", "embedding"]),
+  Article: new Set(["externalId", "content", "description", "imageUrl", "publishedAt", "enrichedAt", "embedding"]),
   ArticleCategory: new Set(["confidence"]),
   Interaction: new Set(["readingTimeSec"]),
   UserInterestVector: new Set(["interestEmbedding", "lastCalculatedAt"]),
