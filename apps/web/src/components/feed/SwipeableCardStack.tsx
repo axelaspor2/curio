@@ -1,10 +1,10 @@
 import { motion, type PanInfo, useAnimation, useMotionValue, useTransform } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FluentEmoji } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type { Article, InteractionType } from "@/types/feed";
 import { ActionButtons } from "./ActionButtons";
 import { ArticleCard } from "./ArticleCard";
+import { CompletionSummary } from "./CompletionSummary";
 import { SwipeIndicator } from "./SwipeIndicator";
 
 // スワイプ判定の閾値（px）- モバイルでの誤操作を防ぎつつ、意図的なスワイプを検出
@@ -204,29 +204,9 @@ export function SwipeableCardStack({
     }
   }, [currentIndex, articles.length, hasMoreArticles, isFetchingMore, onNeedMoreArticles]);
 
-  // スコア閾値以上の記事がすべて消費された場合
-  if (!hasMore && exhaustedByThreshold) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-        <div className="mb-4 animate-emoji-bounce">
-          <FluentEmoji name="party-popper" size={80} />
-        </div>
-        <h2 className="text-xl font-semibold mb-2">おすすめの記事を全て確認しました！</h2>
-        <p className="text-muted-foreground">新しいおすすめ記事が見つかったらお知らせします</p>
-      </div>
-    );
-  }
-
+  // 記事がすべて消費された場合、サマリー画面を表示
   if (!hasMore) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-        <div className="mb-4 animate-emoji-bounce">
-          <FluentEmoji name="party-popper" size={80} />
-        </div>
-        <h2 className="text-xl font-semibold mb-2">すべての記事を確認しました！</h2>
-        <p className="text-muted-foreground">また後で新しい記事をチェックしてください</p>
-      </div>
-    );
+    return <CompletionSummary exhaustedByThreshold={exhaustedByThreshold} />;
   }
 
   return (
