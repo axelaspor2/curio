@@ -63,7 +63,11 @@ export const createTestInteraction = async (
  */
 export const createUnenrichedArticles = async (
   sourceId: string,
-  overrides: { content?: string | null; description?: string | null; enrichedAt?: Date | null } = {},
+  overrides: {
+    content?: string | null;
+    description?: string | null;
+    enrichedAt?: Date | null;
+  } = {},
   count: number = 1,
 ) => {
   const articles = [];
