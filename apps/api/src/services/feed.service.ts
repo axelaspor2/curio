@@ -258,9 +258,9 @@ export const feedService = {
         const lastOriginalArticle = articles.at(-1);
         const nextCursor =
           hasMoreFromVector && lastOriginalArticle
-            ? Buffer.from(
-                `${lastOriginalArticle.similarity}_${lastOriginalArticle.id}`,
-              ).toString("base64")
+            ? Buffer.from(`${lastOriginalArticle.similarity}_${lastOriginalArticle.id}`).toString(
+                "base64",
+              )
             : null;
 
         return {
