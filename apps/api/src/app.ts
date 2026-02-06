@@ -11,6 +11,7 @@ import { categoriesRouter } from "./routes/categories.js";
 import { feedRouter } from "./routes/feed.js";
 import { healthRouter } from "./routes/health.js";
 import { interactionsRouter } from "./routes/interactions.js";
+import { statisticsRouter } from "./routes/statistics.js";
 import { usersRouter } from "./routes/users.js";
 
 const baseApp = new OpenAPIHono();
@@ -37,6 +38,7 @@ const app = baseApp
   .route("/api/feed", feedRouter)
   .route("/api/health", healthRouter)
   .route("/api/interactions", interactionsRouter)
+  .route("/api/statistics", statisticsRouter)
   .route("/api/users", usersRouter);
 
 // OpenAPI JSON
