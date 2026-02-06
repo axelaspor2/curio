@@ -252,11 +252,15 @@ export const feedService = {
           }
         }
 
-        // 最後の記事からカーソルを生成
-        const lastArticle = rerankedArticles.at(-1);
+        // カーソルはリランキング前の元のsimilarity順序に基づいて生成する
+        // リランキング後の順序を使うと、similarity空間でのページネーション位置がずれて
+        // 既に返却した記事が次ページに再出現するバグが発生する
+        const lastOriginalArticle = articles.at(-1);
         const nextCursor =
-          hasMoreFromVector && lastArticle
-            ? Buffer.from(`${lastArticle.similarity}_${lastArticle.id}`).toString("base64")
+          hasMoreFromVector && lastOriginalArticle
+            ? Buffer.from(
+                `${lastOriginalArticle.similarity}_${lastOriginalArticle.id}`,
+              ).toString("base64")
             : null;
 
         return {

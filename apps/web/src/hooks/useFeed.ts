@@ -77,8 +77,10 @@ export function useInfiniteFeedArticles(options: UseFeedOptions = {}): {
 } {
   const query = useInfiniteFeed(options);
 
-  // 全ページの記事をフラット化
-  const articles = query.data?.pages.flatMap((page) => page.articles) ?? [];
+  // 全ページの記事をフラット化し、ページ間の重複を排除
+  const articles = (query.data?.pages.flatMap((page) => page.articles) ?? []).filter(
+    (article, index, self) => self.findIndex((a) => a.id === article.id) === index,
+  );
 
   // 最後のページの exhaustedByThreshold を取得
   const lastPage = query.data?.pages.at(-1);
