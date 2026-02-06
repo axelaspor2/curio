@@ -69,11 +69,12 @@ model Article {
   externalId  String?                     @map("external_id") @db.Text
   title       String                      @db.Text
   content     String?                     @db.Text
-  summary     String?                     @db.Text
+  description String?                     @db.Text
   url         String                      @db.Text
   imageUrl    String?                     @map("image_url") @db.Text
   embedding   Unsupported("vector(768)")? // Native pgvector support via unsupported type
   publishedAt DateTime?                   @map("published_at") @db.Timestamptz
+  enrichedAt  DateTime?                   @map("enriched_at") @db.Timestamptz
   fetchedAt   DateTime                    @default(now()) @map("fetched_at") @db.Timestamptz
   createdAt   DateTime                    @default(now()) @map("created_at") @db.Timestamptz
 

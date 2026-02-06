@@ -44,10 +44,11 @@ READ READ
     String external_id "❓"
     String title 
     String content "❓"
-    String summary "❓"
+    String description "❓"
     String url 
     String image_url "❓"
     DateTime published_at "❓"
+    DateTime enriched_at "❓"
     DateTime fetched_at 
     DateTime created_at 
     }
