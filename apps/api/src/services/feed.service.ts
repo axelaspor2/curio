@@ -285,8 +285,10 @@ export const feedService = {
       (e) => new PrismaError(e instanceof Error ? e.message : "Database error", e),
     ).andThen((result) => {
       // 興味ベクトルがない場合は通常のフィードにフォールバック
+      // cursorはパーソナライズドフィード形式(score_id)なので、
+      // 通常フィード(publishedAt_id)には渡さない
       if (result === null) {
-        return feedService.getFeed(userId, { limit, cursor });
+        return feedService.getFeed(userId, { limit });
       }
       return ResultAsync.fromSafePromise(Promise.resolve(result));
     });
