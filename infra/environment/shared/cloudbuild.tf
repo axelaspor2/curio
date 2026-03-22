@@ -132,19 +132,19 @@ locals {
       filename       = "cloudbuild/api.cloudbuild.yaml"
     }
     rss-fetch = {
-      included_files = ["apps/jobs/src/rss-fetch/**", "apps/jobs/src/lib/**", "apps/jobs/rss-fetch.Dockerfile", "apps/shared/**", "packages/**", "infra/cloudrun/curio-rss-fetch.yaml"]
+      included_files = ["apps/jobs/src/rss-fetch/**", "apps/jobs/src/lib/**", "apps/jobs/rss-fetch.Dockerfile", "apps/shared/**", "packages/**", "apps/packages/database/**", "infra/cloudrun/curio-rss-fetch.yaml"]
       filename       = "cloudbuild/rss-fetch.cloudbuild.yaml"
     }
     article-fetch = {
-      included_files = ["apps/jobs/src/article-fetch/**", "apps/jobs/src/lib/**", "apps/jobs/article-fetch.Dockerfile", "apps/shared/**", "packages/**", "infra/cloudrun/curio-article-fetch.yaml"]
+      included_files = ["apps/jobs/src/article-fetch/**", "apps/jobs/src/lib/**", "apps/jobs/article-fetch.Dockerfile", "apps/shared/**", "packages/**", "apps/packages/database/**", "infra/cloudrun/curio-article-fetch.yaml"]
       filename       = "cloudbuild/article-fetch.cloudbuild.yaml"
     }
     article-enrichment = {
-      included_files = ["apps/jobs/src/article-enrichment/**", "apps/jobs/src/lib/**", "apps/jobs/article-enrichment.Dockerfile", "apps/shared/**", "packages/**", "infra/cloudrun/curio-article-enrichment.yaml"]
+      included_files = ["apps/jobs/src/article-enrichment/**", "apps/jobs/src/lib/**", "apps/jobs/article-enrichment.Dockerfile", "apps/shared/**", "packages/**", "apps/packages/database/**", "infra/cloudrun/curio-article-enrichment.yaml"]
       filename       = "cloudbuild/article-enrichment.cloudbuild.yaml"
     }
     interest-vector = {
-      included_files = ["apps/jobs/src/interest-vector/**", "apps/jobs/src/lib/**", "apps/jobs/interest-vector.Dockerfile", "apps/shared/**", "packages/**", "infra/cloudrun/curio-interest-vector.yaml"]
+      included_files = ["apps/jobs/src/interest-vector/**", "apps/jobs/src/lib/**", "apps/jobs/interest-vector.Dockerfile", "apps/shared/**", "packages/**", "apps/packages/database/**", "infra/cloudrun/curio-interest-vector.yaml"]
       filename       = "cloudbuild/interest-vector.cloudbuild.yaml"
     }
   }
